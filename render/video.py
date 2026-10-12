@@ -55,14 +55,35 @@ def ending(issue: dict, out: Path):
     img.save(out)
 
 
-async def _tts(text: str, out: Path) -> bool:
+TTS_ERRORS: list[str] = []
+
+
+async def _edge(text: str, out: Path) -> bool:
+    import edge_tts
+    await edge_tts.Communicate(text, VOICE, rate="+5%").save(str(out))
+    return out.exists() and out.stat().st_size > 1000
+
+
+def _gtts(text: str, out: Path) -> bool:
+    from gtts import gTTS
+    gTTS(text, lang="ru").save(str(out))
+    return out.exists() and out.stat().st_size > 1000
+
+
+def tts(text: str, out: Path) -> str | None:
+    """Пробуем edge-tts, затем gTTS. Возвращаем имя движка или None."""
     try:
-        import edge_tts
-        await edge_tts.Communicate(text, VOICE, rate="+5%").save(str(out))
-        return out.exists() and out.stat().st_size > 1000
+        if asyncio.run(_edge(text, out)):
+            return "edge-tts"
     except Exception as exc:
-        print(f"TTS недоступен: {exc}", file=sys.stderr)
-        return False
+        TTS_ERRORS.append(f"edge-tts: {exc}")
+    try:
+        if _gtts(text, out):
+            return "gtts"
+    except Exception as exc:
+        TTS_ERRORS.append(f"gtts: {exc}")
+    print("TTS недоступен:", TTS_ERRORS[-2:], file=sys.stderr)
+    return None
 
 
 def duration(path: Path) -> float:
@@ -93,12 +114,14 @@ def build(folder: Path) -> Path:
     images.append(cover); audios.append(a); durs.append(COVER_SECONDS)
 
     voiced = True
+    engines: list = []
     for i, seg in enumerate(script, 1):
         img = tmp / f"f{i:02d}.png"
         frame(issue, seg["onscreen"], seg["voice"], i, len(script), img)
         a = tmp / f"a{i:02d}.mp3"
-        ok = asyncio.run(_tts(seg["voice"], a))
-        if not ok:
+        engine = tts(seg["voice"], a)
+        engines.append(engine)
+        if not engine:
             voiced = False
             words = len(seg["voice"].split())
             silence(max(3.0, words / 2.6), a)
@@ -136,7 +159,8 @@ def build(folder: Path) -> Path:
         "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(out),
     ], check=True)
     shutil.rmtree(tmp, ignore_errors=True)
-    (folder / "video.json").write_text(json.dumps({"voiced": voiced, "seconds": round(sum(durs), 1)},
+    (folder / "video.json").write_text(json.dumps({"voiced": voiced, "engines": engines, "seconds": round(sum(durs), 1),
+                                                   "errors": TTS_ERRORS[:4]},
                                                   ensure_ascii=False), encoding="utf-8")
     print(f"Видео готово: {out} ({sum(durs):.1f} с, голос: {'да' if voiced else 'нет'})")
     return out
