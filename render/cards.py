@@ -242,11 +242,44 @@ def video_cover(issue: dict, out: Path, headline: str | None = None, sub: str | 
     img.save(out, optimize=True)
 
 
+def story_card(issue: dict, out: Path):
+    """Сторис 1080×1920 для вечернего поста: вопрос и варианты, голосование — в Telegram."""
+    W, H, M = 1080, 1920, 80
+    ev = issue["posts"]["evening"]
+    poll = ev.get("poll") or {}
+    question = poll.get("question") or ev.get("rubric", "Вопрос дня")
+    options = poll.get("options", [])
+    img = Image.new("RGB", (W, H), PAPER)
+    d = ImageDraw.Draw(img)
+    y = 250
+    double_rule(d, M, W - M, y)
+    mf = oswald(34)
+    d.text((M, y + 22), "МЕРКУРИЙ ВИНОВАТ", font=mf, fill=INK)
+    d.text((W - M, y + 22), "ВЕЧЕРНИЙ ВОПРОС", font=mf, fill=INK, anchor="ra")
+    d.rectangle([M, y + 80, W - M, y + 82], fill=INK)
+    y = tag(d, (M, 460), "ОПРОС", 40) + 36
+    qf = fit_font(d, question.upper(), oswald, W - 2 * M, 3, 120, 64)
+    y = draw_lines(d, (M, y), wrap(d, question.upper(), qf, W - 2 * M), qf, INK, int(qf.size * 1.15)) + 70
+    of = serif(46)
+    for i, opt in enumerate(options[:6]):
+        lines = wrap(d, opt, of, W - 2 * M - 110)
+        h = max(1, len(lines)) * 58 + 36
+        d.rectangle([M, y, W - M, y + h], outline=INK, width=4)
+        d.text((M + 30, y + h / 2), chr(ord("А") + i), font=oswald(52), fill=RED, anchor="lm")
+        draw_lines(d, (M + 100, y + 18), lines, of, INK, 58)
+        y += h + 22
+    ff = oswald(48)
+    d.text((W / 2, 1540), "ГОЛОСУЙТЕ В TELEGRAM", font=ff, fill=INK, anchor="mm")
+    d.text((W / 2, 1610), "t.me/merkuriy_vinovat · ссылка в профиле", font=serif(36, "Italic"), fill=INK, anchor="mm")
+    img.save(out, optimize=True)
+
+
 def render_issue(folder: Path):
     issue = json.loads((folder / "issue.json").read_text(encoding="utf-8"))
     horoscope_card(issue, folder / "horoscope.png")
     tarot_card(issue, folder / "tarot.png")
     video_cover(issue, folder / "cover.png")
+    story_card(issue, folder / "story.png")
     print(f"Карточки готовы: {folder}")
 
 
