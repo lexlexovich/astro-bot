@@ -1,0 +1,65 @@
+name: Сборка видео
+
+on:
+  push:
+    paths:
+      - 'content/**/issue.json'
+  workflow_dispatch:
+    inputs:
+      date:
+        description: 'Дата ГГГГ-ММ-ДД — пересобрать видео этого дня'
+        required: false
+
+concurrency:
+  group: video
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Установить зависимости
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          pip install -r requirements.txt
+
+      - name: Собрать карточки и видео
+        env:
+          DAY: ${{ inputs.date }}
+        run: |
+          today=$(TZ=Europe/Moscow date +%F)
+          for f in content/*/issue.json; do
+            d=$(dirname "$f"); day=$(basename "$d")
+            if [ -n "$DAY" ] && [ "$day" != "$DAY" ]; then continue; fi
+            if [ -z "$DAY" ] && [[ "$day" < "$today" ]]; then continue; fi
+            if [ -n "$DAY" ]; then rm -f "$d/video.mp4"; fi
+            python -m render.cards "$d"
+            if [ ! -f "$d/video.mp4" ]; then python -m render.video "$d"; fi
+          done
+
+      - name: Сохранить
+        run: |
+          git config user.name "vega-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add content
+          if ! git diff --cached --quiet; then
+            git commit -m "video: сборка"
+            for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
+          fi
+
+      - name: Сообщить об ошибке
+        if: failure()
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage" \
+            -d chat_id="${ADMIN_CHAT_ID}" \
+            --data-urlencode text="⚠️ Меркурий виноват: видео не собралось. GitHub → Actions → «Сборка видео» покажет ошибку." > /dev/null

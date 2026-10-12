@@ -1,0 +1,72 @@
+name: Публикация
+
+on:
+  schedule:
+    - cron: '30 4 * * *'   # 07:30 МСК — гороскоп дня
+    - cron: '30 9 * * *'   # 12:30 МСК — карта Таро
+    - cron: '0 15 * * *'   # 18:00 МСК — видео
+    - cron: '0 18 * * *'   # 21:00 МСК — вечерний пост
+    - cron: '40 18 * * *'  # 21:40 МСК — отчёт админу
+  workflow_dispatch:
+    inputs:
+      slot:
+        description: 'morning | tarot | video | evening | report'
+        required: true
+        default: morning
+      date:
+        description: 'Дата ГГГГ-ММ-ДД (пусто — сегодня)'
+        required: false
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install requests
+
+      - name: Определить слот
+        id: slot
+        run: |
+          case "${{ github.event.schedule }}" in
+            "30 4 * * *")  s=morning ;;
+            "30 9 * * *")  s=tarot ;;
+            "0 15 * * *")  s=video ;;
+            "0 18 * * *")  s=evening ;;
+            "40 18 * * *") s=report ;;
+            *)             s="${{ inputs.slot }}" ;;
+          esac
+          echo "slot=$s" >> "$GITHUB_OUTPUT"
+
+      - name: Опубликовать
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          ADMIN_CHAT_ID: ${{ secrets.ADMIN_CHAT_ID }}
+          DAY: ${{ inputs.date }}
+        run: |
+          if [ -n "$DAY" ]; then
+            python -m publish.telegram "${{ steps.slot.outputs.slot }}" --date "$DAY"
+          else
+            python -m publish.telegram "${{ steps.slot.outputs.slot }}"
+          fi
+
+      - name: Сохранить статус
+        if: always()
+        run: |
+          git config user.name "vega-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add content/*/status.json 2>/dev/null || true
+          if ! git diff --cached --quiet; then
+            git commit -m "status: ${{ steps.slot.outputs.slot }}"
+            for i in 1 2 3; do git pull --rebase && git push && break; sleep 5; done
+          fi
