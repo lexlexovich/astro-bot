@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from datetime import date
 from pathlib import Path
 
 from PIL import Image, ImageDraw
@@ -22,6 +23,39 @@ from render.cards import INK, PAPER, RED, double_rule, draw_lines, fit_font, osw
 VOICE = "ru-RU-SvetlanaNeural"
 W, H, M = 1080, 1920, 80
 COVER_SECONDS = 1.2
+
+
+MUSIC = Path(__file__).resolve().parent.parent / "assets" / "music"
+LIGHT_RUBRICS = ("знаки и", "совместим")  # для лёгких рубрик — более весёлый трек
+
+
+def pick_track(issue: dict) -> Path | None:
+    tracks_file = MUSIC / "tracks.json"
+    if not tracks_file.exists():
+        return None
+    tracks = json.loads(tracks_file.read_text(encoding="utf-8"))
+    v = issue["posts"]["video"]
+    mood = v.get("music")
+    if not mood:
+        title = (v.get("title", "") + " " + v.get("cover_headline", "")).lower()
+        mood = "light" if any(r in title for r in LIGHT_RUBRICS) else "space"
+    pool = [t for t in tracks if t["mood"] == mood] or tracks
+    day = date.fromisoformat(issue["date"]).toordinal()
+    return MUSIC / pool[day % len(pool)]["file"]
+
+
+def mix_music(voice: Path, track: Path, seconds: float, out: Path):
+    """Голос громко, музыка тихо и приглушается, когда Вега говорит."""
+    fade_out = max(0.0, seconds - 2.0)
+    flt = (
+        f"[0:a]loudnorm=I=-16:TP=-1.5:LRA=11,asplit=2[v][sc];"
+        f"[1:a]atrim=0:{seconds:.2f},asetpts=PTS-STARTPTS,loudnorm=I=-30:TP=-6,"
+        f"afade=t=in:d=0.8,afade=t=out:st={fade_out:.2f}:d=2[m];"
+        f"[m][sc]sidechaincompress=threshold=0.03:ratio=6:attack=20:release=400[md];"
+        f"[v][md]amix=inputs=2:duration=first:normalize=0[a]"
+    )
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(voice), "-stream_loop", "-1", "-i", str(track),
+                    "-filter_complex", flt, "-map", "[a]", "-ar", "44100", "-ac", "2", str(out)], check=True)
 
 
 def frame(issue: dict, onscreen: str, voice: str, n: int, total: int, out: Path):
@@ -150,6 +184,11 @@ def build(folder: Path) -> Path:
     audio = tmp / "voice.wav"
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(alst),
                     "-c", "copy", str(audio)], check=True)
+    track = pick_track(issue)
+    if track and track.exists():
+        mixed = tmp / "mixed.wav"
+        mix_music(audio, track, sum(durs), mixed)
+        audio = mixed
     out = folder / "video.mp4"
     subprocess.run([
         "ffmpeg", "-y", "-loglevel", "error",
@@ -160,7 +199,8 @@ def build(folder: Path) -> Path:
     ], check=True)
     shutil.rmtree(tmp, ignore_errors=True)
     (folder / "video.json").write_text(json.dumps({"voiced": voiced, "engines": engines, "seconds": round(sum(durs), 1),
-                                                   "errors": TTS_ERRORS[:4]},
+                                                   "errors": TTS_ERRORS[:4],
+                                                   "music": track.name if track else None},
                                                   ensure_ascii=False), encoding="utf-8")
     print(f"Видео готово: {out} ({sum(durs):.1f} с, голос: {'да' if voiced else 'нет'})")
     return out
