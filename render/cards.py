@@ -176,7 +176,76 @@ def horoscope_card(issue: dict, out: Path):
     img.save(out, optimize=True)
 
 
+TAROT_ART = ROOT / "assets" / "tarot"
+
+
+def tarot_info(name: str) -> tuple[Path | None, dict | None]:
+    """Иллюстрация карты (assets/tarot/<номер в колоде>.jpg) и её описание из колоды."""
+    from astro.tarot import DECK
+    for i, c in enumerate(DECK):
+        if c["name"].lower() == name.strip().lower():
+            p = TAROT_ART / f"{i:02d}.jpg"
+            return (p if p.exists() else None), c
+    return None, None
+
+
+def tarot_subtitle(c: dict | None) -> str:
+    if not c:
+        return ""
+    if c["arcana"] == "старший аркан":
+        return f"Старший аркан · № {c['number']}"
+    return f"Младший аркан · масть {c['suit']} · стихия {c['element']}"
+
+
+def art_image(path: Path, height: int) -> Image.Image:
+    im = Image.open(path).convert("RGB")
+    return im.resize((int(im.width * height / im.height), height), Image.LANCZOS)
+
+
+def tarot_card_art(issue: dict, out: Path, art: Path, info: dict | None):
+    W, H, M = 1080, 1350, 64
+    img = Image.new("RGB", (W, H), PAPER)
+    d = ImageDraw.Draw(img)
+    y = masthead(d, issue, M, W - M, M)
+    tag(d, (M, y + 6), "КАРТА ДНЯ")
+    t = issue["posts"]["tarot"]
+    a = art_image(art, 800)
+    ax, ay = W - M - a.width, y + 6
+    img.paste(a, (ax, ay))
+    d.rectangle([ax - 1, ay - 1, ax + a.width, ay + a.height], outline=INK, width=3)
+    tw = ax - M - 36
+    name = t["card"].upper()
+    nf = fit_font(d, name, oswald, tw, 3, 96, 44)
+    ny = y + 90
+    for ln in wrap(d, name, nf, tw):
+        d.text((M, ny), ln, font=nf, fill=INK)
+        ny += int(nf.size * 1.15)
+    ny += 20
+    d.rectangle([M, ny, M + tw, ny + 2], fill=INK)
+    ny += 24
+    kf = serif(30, "Italic")
+    for ln in wrap(d, t.get("keywords", ""), kf, tw)[:5]:
+        d.text((M, ny), ln, font=kf, fill=INK)
+        ny += 40
+    sub = tarot_subtitle(info)
+    if sub:
+        sf = serif(24)
+        sl = wrap(d, sub, sf, tw)
+        sy = ay + a.height - len(sl) * 32
+        d.rectangle([M, sy - 18, M + tw, sy - 16], fill=INK)
+        for ln in sl:
+            d.text((M, sy), ln, font=sf, fill=INK)
+            sy += 32
+    foot = oswald(24, "Medium")
+    d.text((M, H - M), "t.me/merkuriy_vinovat", font=foot, fill=INK, anchor="ls")
+    d.text((W - M, H - M), "Ведёт AI-астролог Вега", font=foot, fill=INK, anchor="rs")
+    img.save(out, optimize=True)
+
+
 def tarot_card(issue: dict, out: Path):
+    art, info = tarot_info(issue["posts"]["tarot"]["card"])
+    if art:
+        return tarot_card_art(issue, out, art, info)
     W, H, M = 1080, 1350, 64
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)

@@ -107,7 +107,36 @@ def carousel(issue: dict, folder: Path) -> list[Path]:
     return paths
 
 
+def _reel_frame_art(issue: dict, art: Path, out: Path):
+    from render.cards import art_image
+    W, H = 1080, 1920
+    img = Image.new("RGB", (W, H), PAPER)
+    d = ImageDraw.Draw(img)
+    double_rule(d, 80, W - 80, 150)
+    d.text((80, 175), "МЕРКУРИЙ ВИНОВАТ", font=oswald(40), fill=INK)
+    d.text((W - 80, 185), "КАРТА ДНЯ", font=oswald(40), fill=RED, anchor="ra")
+    d.rectangle([80, 242, W - 80, 244], fill=INK)
+    a = art_image(art, 1230)
+    x = (W - a.width) // 2
+    img.paste(a, (x, 280))
+    d.rectangle([x - 1, 279, x + a.width, 280 + a.height], outline=INK, width=3)
+    t = issue["posts"]["tarot"]
+    name = t["card"].upper()
+    nf = fit_font(d, name, oswald, W - 160, 1, 100, 60)
+    d.text((W / 2, 1555), name, font=nf, fill=INK, anchor="mt")
+    kf = serif(38, "Italic")
+    ky = 1555 + int(nf.size * 1.3)
+    for ln in wrap(d, t.get("keywords", ""), kf, W - 160)[:2]:
+        d.text((W / 2, ky), ln, font=kf, fill=INK, anchor="mt")
+        ky += 50
+    img.save(out)
+
+
 def _reel_frame(issue: dict, folder: Path, out: Path):
+    from render.cards import tarot_info
+    art, _ = tarot_info(issue["posts"]["tarot"]["card"])
+    if art:
+        return _reel_frame_art(issue, art, out)
     W, H = 1080, 1920
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)
