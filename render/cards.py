@@ -280,7 +280,13 @@ def render_issue(folder: Path):
     tarot_card(issue, folder / "tarot.png")
     video_cover(issue, folder / "cover.png")
     story_card(issue, folder / "story.png")
+    # TikTok принимает фото только в JPEG/WebP
+    for name in ("horoscope", "tarot"):
+        Image.open(folder / f"{name}.png").convert("RGB").save(folder / f"{name}.jpg", quality=92)
     print(f"Карточки готовы: {folder}")
+    # карусель гороскопа и Reels с картой Таро для Instagram и TikTok
+    from render.social import render_social
+    render_social(folder)
 
 
 if __name__ == "__main__":
