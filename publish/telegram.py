@@ -279,6 +279,11 @@ def main():
             args.date = now.date().isoformat()
     if args.slot == "report":
         report(args.date, tg)
+        folder = ROOT / "content" / args.date
+        if folder.exists():
+            status = load_status(folder)
+            status["report_sent"] = True
+            save_status(folder, status)
     else:
         publish(args.slot, args.date, tg)
 
