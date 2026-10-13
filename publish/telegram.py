@@ -212,12 +212,59 @@ def report(day: str, tg: TG) -> None:
     tg.alert("\n".join(lines))
 
 
+AUTO_WINDOW_HOURS = 3
+MAX_ATTEMPTS = 3
+
+
+def auto(tg: TG) -> None:
+    """Запуск по частому расписанию: публикуем всё, чьё время уже наступило и что ещё не вышло.
+    GitHub запускает cron с задержками и иногда пропускает запуски — так ни один слот не теряется."""
+    now = datetime.now(MSK)
+    day = now.date().isoformat()
+    folder = ROOT / "content" / day
+    if not (folder / "issue.json").exists():
+        folder.mkdir(parents=True, exist_ok=True)
+        status = load_status(folder)
+        if now.hour >= 7 and not status.get("missing_alerted"):
+            tg.alert(f"⚠️ Меркурий виноват: выпуск на {day} не найден, публикации стоят.\n"
+                     f"Напишите Claude: «сделай выпуск на {day}».")
+            status["missing_alerted"] = True
+            save_status(folder, status)
+        return
+    for slot in SLOTS:
+        h, m = SLOT_TIME[slot]
+        planned = now.replace(hour=h, minute=m, second=0, microsecond=0)
+        late = (now - planned).total_seconds() / 3600
+        if late < 0 or late > AUTO_WINDOW_HOURS:
+            continue
+        st = load_status(folder).get(slot, {})
+        if st.get("ok") or st.get("attempts", 0) >= MAX_ATTEMPTS:
+            continue
+        try:
+            publish(slot, day, tg)
+        except SystemExit:
+            status = load_status(folder)
+            status.setdefault(slot, {})["attempts"] = st.get("attempts", 0) + 1
+            save_status(folder, status)
+    h, m = SLOT_TIME["report"]
+    if now >= now.replace(hour=h, minute=m, second=0, microsecond=0):
+        status = load_status(folder)
+        if not status.get("report_sent"):
+            report(day, tg)
+            status = load_status(folder)
+            status["report_sent"] = True
+            save_status(folder, status)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("slot", choices=[*SLOTS, "report"])
+    ap.add_argument("slot", choices=[*SLOTS, "report", "auto"])
     ap.add_argument("--date")
     args = ap.parse_args()
     tg = TG()
+    if args.slot == "auto":
+        auto(tg)
+        return
     now = datetime.now(MSK)
     if args.date is None:
         if os.environ.get("GITHUB_EVENT_NAME") == "schedule":

@@ -2,15 +2,14 @@ name: Публикация
 
 on:
   schedule:
-    - cron: '30 4 * * *'   # 07:30 МСК — гороскоп дня
-    - cron: '30 9 * * *'   # 12:30 МСК — карта Таро
-    - cron: '0 15 * * *'   # 18:00 МСК — видео
-    - cron: '0 18 * * *'   # 21:00 МСК — вечерний пост
-    - cron: '40 18 * * *'  # 21:40 МСК — отчёт админу
+    # Каждые 10 минут с 06:00 до 22:59 по Москве. Скрипт сам решает, чьё время наступило:
+    # 07:30 гороскоп, 12:30 Таро, 18:00 видео, 21:00 вечерний пост, 21:40 отчёт.
+    # GitHub запускает cron с задержками и иногда пропускает — частый запуск это страхует.
+    - cron: '*/10 3-19 * * *'
   workflow_dispatch:
     inputs:
       slot:
-        description: 'morning | tarot | video | evening | report'
+        description: 'morning | tarot | video | evening | report | auto'
         required: true
         default: morning
       date:
@@ -37,14 +36,7 @@ jobs:
       - name: Определить слот
         id: slot
         run: |
-          case "${{ github.event.schedule }}" in
-            "30 4 * * *")  s=morning ;;
-            "30 9 * * *")  s=tarot ;;
-            "0 15 * * *")  s=video ;;
-            "0 18 * * *")  s=evening ;;
-            "40 18 * * *") s=report ;;
-            *)             s="${{ inputs.slot }}" ;;
-          esac
+          if [ "${{ github.event_name }}" = "schedule" ]; then s=auto; else s="${{ inputs.slot }}"; fi
           echo "slot=$s" >> "$GITHUB_OUTPUT"
 
       - name: Опубликовать
