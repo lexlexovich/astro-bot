@@ -26,6 +26,19 @@ SLOTS = {
     "evening": "21:00 Вечерний пост",
 }
 CAPTION_LIMIT = 1024
+SLOT_TIME = {"morning": (7, 30), "tarot": (12, 30), "video": (18, 0), "evening": (21, 0), "report": (21, 40)}
+MAX_LATE_HOURS = 3  # запуск по расписанию, опоздавший сильнее и перешедший за полночь, не публикуем
+
+
+def scheduled_day(slot: str, now: datetime) -> tuple[str, float]:
+    """GitHub иногда запускает cron с опозданием на часы. Определяем, к какому дню
+    относится запуск: если сейчас раньше времени слота, это вчерашний слот."""
+    h, m = SLOT_TIME[slot]
+    planned = now.replace(hour=h, minute=m, second=0, microsecond=0)
+    if now < planned:
+        planned -= timedelta(days=1)
+    late = (now - planned).total_seconds() / 3600
+    return planned.date().isoformat(), late
 
 
 class TG:
@@ -152,9 +165,21 @@ def report(day: str, tg: TG) -> None:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("slot", choices=[*SLOTS, "report"])
-    ap.add_argument("--date", default=datetime.now(MSK).date().isoformat())
+    ap.add_argument("--date")
     args = ap.parse_args()
     tg = TG()
+    now = datetime.now(MSK)
+    if args.date is None:
+        if os.environ.get("GITHUB_EVENT_NAME") == "schedule":
+            args.date, late = scheduled_day(args.slot, now)
+            if args.date != now.date().isoformat() and late > MAX_LATE_HOURS and args.slot != "report":
+                label = SLOTS[args.slot]
+                tg.alert(f"⚠️ GitHub запустил слот «{label}» за {args.date} с опозданием {late:.1f} ч. "
+                         f"Пропускаю, чтобы пост не вышел ночью. Опубликовать вручную: Actions → Публикация.")
+                print(f"{args.slot}: опоздание {late:.1f} ч, пропуск")
+                return
+        else:
+            args.date = now.date().isoformat()
     if args.slot == "report":
         report(args.date, tg)
     else:
