@@ -3,6 +3,7 @@
 Запуск: python -m render.social content/2026-10-13
 Карусель: carousel_1.jpg … carousel_6.jpg (1080×1350): обложка, 4 слайда по 3 знака, призыв в Telegram.
 Reels: tarot_reel.mp4 (1080×1920, 9 с): карта дня с медленным наездом камеры и музыкой, без голоса.
+Short: horoscope_short.mp4 (1080×1920, ~14 с): слайды карусели по очереди, для YouTube Shorts.
 """
 from __future__ import annotations
 
@@ -16,7 +17,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-from render.cards import (GREY, INK, PAPER, RED, SIGNS, double_rule, draw_lines, fit_font, masthead, mercury,
+from render.cards import (MONTHS, GREY, INK, PAPER, RED, SIGNS, double_rule, draw_lines, fit_font, masthead, mercury,
                           oswald, ru_date, serif, stamp, tag, wrap)
 
 CW, CH, M = 1080, 1350, 72
@@ -183,13 +184,70 @@ def tarot_reel(issue: dict, folder: Path) -> Path | None:
     return out
 
 
+SLIDE_SECONDS = 2.6
+FADE = 0.4
+
+
+def horoscope_short(issue: dict, folder: Path) -> Path | None:
+    """Гороскоп для YouTube Shorts: 6 слайдов карусели по очереди с наплывом и музыкой (~15 с)."""
+    if not shutil.which("ffmpeg"):
+        print("ffmpeg не найден, Short с гороскопом пропущен")
+        return None
+    from render.video import MUSIC
+    tmp = Path(tempfile.mkdtemp())
+    W, H = 1080, 1920
+    frames = []
+    for i in range(1, 7):
+        slide = Image.open(folder / f"carousel_{i}.jpg").convert("RGB")
+        img = Image.new("RGB", (W, H), PAPER)
+        d = ImageDraw.Draw(img)
+        dd = date.fromisoformat(issue["date"])
+        head = f"ГОРОСКОП НА {dd.day} {MONTHS[dd.month - 1].upper()}"
+        hf = fit_font(d, head, oswald, W - 160, 1, 96, 56)
+        d.text((W / 2, 200), head, font=hf, fill=RED, anchor="mm")
+        img.paste(slide, (0, 300))
+        if i == 1:  # в видео листать не нужно — меняем плашку обложки
+            d.rectangle([M, 300 + CH - 210, CW - M, 300 + CH - 120], fill=INK)
+            d.text((CW / 2, 300 + CH - 165), "ВАШ ЗНАК — ЧЕРЕЗ ПАРУ СЕКУНД", font=oswald(46), fill=PAPER, anchor="mm")
+        f = tmp / f"s{i}.png"
+        img.save(f)
+        frames.append(f)
+    n = len(frames)
+    total = n * SLIDE_SECONDS - (n - 1) * FADE
+    inputs = []
+    for f in frames:
+        inputs += ["-loop", "1", "-t", f"{SLIDE_SECONDS}", "-i", str(f)]
+    tracks = json.loads((MUSIC / "tracks.json").read_text(encoding="utf-8"))
+    pool = [t for t in tracks if t["mood"] == "space"] or tracks
+    day = date.fromisoformat(issue["date"]).toordinal()
+    track = MUSIC / pool[(day + 4) % len(pool)]["file"]
+    chain, last = [], "[0:v]"
+    for k in range(1, n):
+        off = k * (SLIDE_SECONDS - FADE)
+        out = f"[x{k}]"
+        chain.append(f"{last}[{k}:v]xfade=transition=fade:duration={FADE}:offset={off:.2f}{out}")
+        last = out
+    chain.append(f"{last}format=yuv420p[v]")
+    chain.append(f"[{n}:a]atrim=0:{total:.2f},loudnorm=I=-18:TP=-2,afade=t=in:d=1,"
+                 f"afade=t=out:st={total - 1.5:.2f}:d=1.5[a]")
+    out = folder / "horoscope_short.mp4"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *inputs, "-i", str(track),
+                    "-filter_complex", ";".join(chain), "-map", "[v]", "-map", "[a]", "-r", "30",
+                    "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-c:a", "aac", "-b:a", "160k",
+                    "-t", f"{total:.2f}", "-movflags", "+faststart", str(out)], check=True)
+    shutil.rmtree(tmp, ignore_errors=True)
+    return out
+
+
 def render_social(folder: Path, reel: bool = True):
     folder = folder.resolve()
     issue = json.loads((folder / "issue.json").read_text(encoding="utf-8"))
     carousel(issue, folder)
     if reel and not (folder / "tarot_reel.mp4").exists():
         tarot_reel(issue, folder)
-    print(f"Карусель и Reels Таро готовы: {folder}")
+    if reel and not (folder / "horoscope_short.mp4").exists():
+        horoscope_short(issue, folder)
+    print(f"Карусель, Reels Таро и Short с гороскопом готовы: {folder}")
 
 
 if __name__ == "__main__":

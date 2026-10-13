@@ -65,9 +65,10 @@ class TG:
         if kind == "video":
             data["supports_streaming"] = True
         with open(path, "rb") as fh:
-            self.call(method, data, files={kind: fh})
+            msg = self.call(method, data, files={kind: fh})
         if not short and caption:
             self.text(chat, caption)
+        return msg
 
     def poll(self, chat, question: str, options: list[str]):
         return self.call("sendPoll", {"chat_id": chat, "question": question,
@@ -91,6 +92,49 @@ def save_status(folder: Path, status: dict):
     (folder / "status.json").write_text(json.dumps(status, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def poll_summary(tg: TG, day: str, after_message_id: int | None) -> None:
+    """Утром закрываем вчерашний опрос и публикуем итоги — Вега обещает их в тексте опроса."""
+    d = datetime.fromisoformat(day).date()
+    for back in (1, 2):
+        pday = (d - timedelta(days=back)).isoformat()
+        pfolder = ROOT / "content" / pday
+        pstatus = load_status(pfolder) if pfolder.exists() else {}
+        ev = pstatus.get("evening", {})
+        if not ev.get("ok") or ev.get("poll_reported"):
+            continue
+        try:
+            pissue = json.loads((pfolder / "issue.json").read_text(encoding="utf-8"))
+        except Exception:
+            continue
+        if not pissue.get("posts", {}).get("evening", {}).get("poll"):
+            continue
+        poll = None
+        if ev.get("poll_message_id"):
+            poll = tg.call("stopPoll", {"chat_id": tg.channel, "message_id": ev["poll_message_id"]})
+        elif after_message_id:
+            # старые выпуски не хранили номер сообщения: ищем последний опрос перед утренним постом
+            for mid in range(after_message_id - 1, max(after_message_id - 40, 0), -1):
+                try:
+                    poll = tg.call("stopPoll", {"chat_id": tg.channel, "message_id": mid})
+                    break
+                except RuntimeError as exc:
+                    if "already" in str(exc).lower():
+                        break
+        ev["poll_reported"] = True
+        pstatus["evening"] = ev
+        save_status(pfolder, pstatus)
+        if not poll or not poll.get("total_voter_count"):
+            return
+        total = poll["total_voter_count"]
+        opts = sorted(poll["options"], key=lambda o: -o["voter_count"])
+        lines = [f"Итоги вчерашнего опроса «{poll['question']}»", ""]
+        for o in opts:
+            lines.append(f"{o['text']} — {round(100 * o['voter_count'] / total)}%")
+        lines += ["", f"Проголосовали: {total}. Спасибо! Новый опрос — сегодня в 21:00."]
+        tg.text(tg.channel, "\n".join(lines))
+        return
+
+
 def publish(slot: str, day: str, tg: TG) -> None:
     folder = ROOT / "content" / day
     if not (folder / "issue.json").exists():
@@ -104,8 +148,13 @@ def publish(slot: str, day: str, tg: TG) -> None:
         return
     post = issue["posts"][slot]
     try:
+        extra = {}
         if slot == "morning":
-            tg.media(tg.channel, "photo", folder / "horoscope.png", post["text"])
+            msg = tg.media(tg.channel, "photo", folder / "horoscope.png", post["text"])
+            try:
+                poll_summary(tg, day, msg.get("message_id"))
+            except Exception as exc:  # итоги опроса не должны ронять утренний пост
+                print(f"Итоги опроса: {exc}", file=sys.stderr)
         elif slot == "tarot":
             tg.media(tg.channel, "photo", folder / "tarot.png", post["text"])
         elif slot == "video":
@@ -120,8 +169,9 @@ def publish(slot: str, day: str, tg: TG) -> None:
             if post.get("text"):
                 tg.text(tg.channel, post["text"])
             if post.get("poll"):
-                tg.poll(tg.channel, post["poll"]["question"], post["poll"]["options"])
-        status[slot] = {"ok": True, "at": datetime.now(MSK).isoformat(timespec="minutes")}
+                pm = tg.poll(tg.channel, post["poll"]["question"], post["poll"]["options"])
+                extra["poll_message_id"] = pm.get("message_id")
+        status[slot] = {"ok": True, "at": datetime.now(MSK).isoformat(timespec="minutes"), **extra}
         print(f"{slot}: опубликован")
     except Exception as exc:
         status[slot] = {"ok": False, "error": str(exc)}
