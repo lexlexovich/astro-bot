@@ -28,36 +28,29 @@ def norm(s: str) -> str:
 INDEX = {norm(c["name"]): i for i, c in enumerate(DECK)}
 
 
-def _dark(px) -> bool:
-    return sum(px[:3]) < 200
-
-
 def crop_frame(im: Image.Image) -> Image.Image:
-    """Если по краю есть тёмная линия рамки — режем по её внутренней стороне."""
-    w, h = im.size
-    px = im.load()
+    """Режем только настоящую рамку: сплошную тёмную линию вдоль края (тёмных точек > 80% длины)."""
+    import numpy as np
+    g = np.asarray(im.convert("L"), dtype=np.int16)
+    h, w = g.shape
+    dark = g < 90
 
-    def scan(points):
-        # points: последовательность координат от края внутрь; ищем тёмную полосу и её конец
-        seen = False
-        for k, (x, y) in enumerate(points):
-            if k > 90:
-                return 0
-            if _dark(px[x, y]):
-                seen = True
-            elif seen:
-                return k + 8
+    def side(lines):
+        start = None
+        for k, frac in enumerate(lines):
+            if k > 70:
+                break
+            if start is None and frac > 0.8:
+                start = k
+            elif start is not None and frac < 0.3:
+                return k + 6
         return 0
 
-    def side(coords_fn, length):
-        vals = [scan(coords_fn(t)) for t in (length // 3, length // 2, 2 * length // 3)]
-        vals = [v for v in vals if v]
-        return max(vals) if len(vals) >= 2 else 0
-
-    left = side(lambda y: [(x, y) for x in range(w)], h)
-    right = side(lambda y: [(w - 1 - x, y) for x in range(w)], h)
-    top = side(lambda x: [(x, y) for y in range(h)], w)
-    bottom = side(lambda x: [(x, h - 1 - y) for y in range(h)], w)
+    ys, xs = slice(int(h * 0.1), int(h * 0.9)), slice(int(w * 0.1), int(w * 0.9))
+    left = side(dark[ys, k].mean() for k in range(w))
+    right = side(dark[ys, w - 1 - k].mean() for k in range(w))
+    top = side(dark[k, xs].mean() for k in range(h))
+    bottom = side(dark[h - 1 - k, xs].mean() for k in range(h))
     if not any((left, right, top, bottom)):
         return im
     return im.crop((left, top, w - right, h - bottom))
