@@ -5,6 +5,7 @@
 - обрезает чёрную рамку по краю, если генератор её нарисовал (у нас своя рамка);
 - приводит цвет бумаги к фирменному #EFEBE0, чтобы карты из разных партий выглядели одной колодой;
 - сохраняет в JPEG 1024×1536.
+С флагом --recolor переводит картинку в тушь + красный (если генератор нарисовал золото и сепию).
 """
 from __future__ import annotations
 
@@ -70,14 +71,37 @@ def paper_balance(im: Image.Image) -> Image.Image:
     return Image.merge("RGB", (r, g, b))
 
 
-def add(path: Path) -> str:
+def ink_and_red(im: Image.Image) -> Image.Image:
+    """Для карт, где генератор ушёл в золото и сепию: всё переводим в тушь на бумаге,
+    золотые монеты — в фирменный красный, родной красный оставляем."""
+    import numpy as np
+    hsv = np.asarray(im.convert("HSV")).astype(np.float32)
+    rgb = np.asarray(im).astype(np.float32)
+    h, s, v = hsv[..., 0] * 360 / 255, hsv[..., 1] / 255, hsv[..., 2] / 255
+    gray = rgb.mean(axis=2)
+    lo, hi = np.percentile(gray, 2), np.percentile(gray, 97)
+    t = np.clip((gray - lo) / max(hi - lo, 1), 0, 1)[..., None]
+    ink, paper = np.array([20, 18, 16]), np.array(PAPER)
+    out = ink + (paper - ink) * t
+    gold = (h > 30) & (h < 62) & (s > 0.7) & (v > 0.55)
+    # закрываем блики внутри монет, не задевая бумагу
+    from PIL import ImageFilter
+    m = Image.fromarray((gold * 255).astype("uint8")).filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(7))
+    gold = np.asarray(m) > 127
+    out[gold] = (np.array([200, 38, 30]) * np.clip(v[..., None] * 0.95, 0, 1))[gold]
+    reds = ((h < 18) | (h > 340)) & (s > 0.55) & (v > 0.3)
+    out[reds] = rgb[reds]
+    return Image.fromarray(out.astype("uint8"))
+
+
+def add(path: Path, recolor: bool = False) -> str:
     key = norm(path.stem)
     if key not in INDEX:
         return f"✗ {path.name}: не нашёл такую карту в колоде"
     i = INDEX[key]
     im = Image.open(path).convert("RGB")
     im = crop_frame(im)
-    im = paper_balance(im)
+    im = ink_and_red(im) if recolor else paper_balance(im)
     # вписываем в 2:3 целиком, без обрезки: поля добиваем цветом бумаги
     im = ImageOps.pad(im, SIZE, Image.LANCZOS, color=PAPER)
     OUT.mkdir(parents=True, exist_ok=True)
@@ -86,5 +110,7 @@ def add(path: Path) -> str:
 
 
 if __name__ == "__main__":
-    for p in sys.argv[1:]:
-        print(add(Path(p)))
+    args = sys.argv[1:]
+    recolor = "--recolor" in args  # золото → красный, сепия → тушь
+    for p in [a for a in args if a != "--recolor"]:
+        print(add(Path(p), recolor))
