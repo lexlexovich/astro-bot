@@ -71,7 +71,8 @@ def fit_font(draw, text, make_font, width, max_lines, start, minimum):
     size = start
     while size > minimum:
         f = make_font(size)
-        if len(wrap(draw, text, f, width)) <= max_lines:
+        lines = wrap(draw, text, f, width)
+        if len(lines) <= max_lines and all(draw.textlength(ln, font=f) <= width for ln in lines):
             return f
         size -= 4
     return make_font(minimum)
@@ -209,7 +210,7 @@ def tarot_card_art(issue: dict, out: Path, art: Path, info: dict | None):
     y = masthead(d, issue, M, W - M, M)
     tag(d, (M, y + 6), "КАРТА ДНЯ")
     t = issue["posts"]["tarot"]
-    a = art_image(art, 800)
+    a = art_image(art, 860)
     ax, ay = W - M - a.width, y + 6
     img.paste(a, (ax, ay))
     d.rectangle([ax - 1, ay - 1, ax + a.width, ay + a.height], outline=INK, width=3)
