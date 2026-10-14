@@ -1,7 +1,8 @@
 {
   "evening": {
     "ok": true,
-    "at": "2026-10-13T03:28+03:00"
+    "at": "2026-10-13T03:28+03:00",
+    "poll_reported": true
   },
   "morning": {
     "ok": true,
