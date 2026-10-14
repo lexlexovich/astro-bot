@@ -1,0 +1,210 @@
+{
+  "date": "2026-10-15",
+  "weekday": "четверг",
+  "issue_no": 3,
+  "sky": {
+    "date": "2026-10-15",
+    "computed_for": "07:00 Europe/Moscow",
+    "planets": {
+      "sun": {
+        "name": "Солнце",
+        "sign": "Lib",
+        "sign_ru": "Весы",
+        "sign_ru_in": "Весах",
+        "degree": 21.8,
+        "abs": 201.82,
+        "retrograde": false
+      },
+      "moon": {
+        "name": "Луна",
+        "sign": "Sag",
+        "sign_ru": "Стрелец",
+        "sign_ru_in": "Стрельце",
+        "degree": 13.6,
+        "abs": 253.63,
+        "retrograde": false
+      },
+      "mercury": {
+        "name": "Меркурий",
+        "sign": "Sco",
+        "sign_ru": "Скорпион",
+        "sign_ru_in": "Скорпионе",
+        "degree": 16.6,
+        "abs": 226.62,
+        "retrograde": false
+      },
+      "venus": {
+        "name": "Венера",
+        "sign": "Sco",
+        "sign_ru": "Скорпион",
+        "sign_ru_in": "Скорпионе",
+        "degree": 5.7,
+        "abs": 215.74,
+        "retrograde": true
+      },
+      "mars": {
+        "name": "Марс",
+        "sign": "Leo",
+        "sign_ru": "Лев",
+        "sign_ru_in": "Льве",
+        "degree": 9.7,
+        "abs": 129.73,
+        "retrograde": false
+      },
+      "jupiter": {
+        "name": "Юпитер",
+        "sign": "Leo",
+        "sign_ru": "Лев",
+        "sign_ru_in": "Льве",
+        "degree": 22.0,
+        "abs": 141.97,
+        "retrograde": false
+      },
+      "saturn": {
+        "name": "Сатурн",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 10.5,
+        "abs": 10.47,
+        "retrograde": true
+      },
+      "uranus": {
+        "name": "Уран",
+        "sign": "Gem",
+        "sign_ru": "Близнецы",
+        "sign_ru_in": "Близнецах",
+        "degree": 5.2,
+        "abs": 65.21,
+        "retrograde": true
+      },
+      "neptune": {
+        "name": "Нептун",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 2.5,
+        "abs": 2.48,
+        "retrograde": true
+      },
+      "pluto": {
+        "name": "Плутон",
+        "sign": "Aqu",
+        "sign_ru": "Водолей",
+        "sign_ru_in": "Водолее",
+        "degree": 3.1,
+        "abs": 303.07,
+        "retrograde": true
+      }
+    },
+    "retrograde": [
+      "Венера",
+      "Сатурн",
+      "Уран",
+      "Нептун",
+      "Плутон"
+    ],
+    "moon": {
+      "name": "Луна",
+      "sign": "Sag",
+      "sign_ru": "Стрелец",
+      "sign_ru_in": "Стрельце",
+      "degree": 13.6,
+      "abs": 253.63,
+      "retrograde": false,
+      "phase": "растущий серп",
+      "angle": 51.8,
+      "illumination_pct": 19,
+      "waxing": true
+    },
+    "aspects": [
+      {
+        "a": "Солнце",
+        "b": "Юпитер",
+        "aspect": "секстиль",
+        "orb": 0.2
+      },
+      {
+        "a": "Нептун",
+        "b": "Плутон",
+        "aspect": "секстиль",
+        "orb": 0.6
+      },
+      {
+        "a": "Марс",
+        "b": "Сатурн",
+        "aspect": "трин",
+        "orb": 0.7
+      },
+      {
+        "a": "Уран",
+        "b": "Плутон",
+        "aspect": "трин",
+        "orb": 2.1
+      },
+      {
+        "a": "Венера",
+        "b": "Плутон",
+        "aspect": "квадрат",
+        "orb": 2.7
+      },
+      {
+        "a": "Уран",
+        "b": "Нептун",
+        "aspect": "секстиль",
+        "orb": 2.7
+      },
+      {
+        "a": "Луна",
+        "b": "Сатурн",
+        "aspect": "трин",
+        "orb": 3.2
+      },
+      {
+        "a": "Луна",
+        "b": "Марс",
+        "aspect": "трин",
+        "orb": 3.9
+      },
+      {
+        "a": "Венера",
+        "b": "Марс",
+        "aspect": "квадрат",
+        "orb": 4.0
+      },
+      {
+        "a": "Меркурий",
+        "b": "Юпитер",
+        "aspect": "квадрат",
+        "orb": 5.3
+      }
+    ],
+    "events_next_7_days": [
+      {
+        "date": "2026-10-16",
+        "type": "station",
+        "text": "Плутон выходит из ретроградности"
+      }
+    ]
+  },
+  "tarot": {
+    "name": "Десятка Пентаклей",
+    "arcana": "младший аркан",
+    "suit": "Пентаклей",
+    "element": "земля"
+  },
+  "recent_issues": [
+    {
+      "date": "2026-10-13",
+      "headline": "Три планеты в Скорпионе: без драмы, пожалуйста",
+      "video": "Зеркальные часы 11:11",
+      "evening": "опрос по стихиям"
+    },
+    {
+      "date": "2026-10-14",
+      "headline": "СРОЧНО. Луна ушла в Стрелец, драма отменена",
+      "video": "Венера ретроградная в Скорпионе — что это",
+      "evening": "угадай знак по описанию"
+    }
+  ]
+}
