@@ -256,14 +256,27 @@ def auto(tg: TG) -> None:
             save_status(folder, status)
 
 
+def intro(tg: TG) -> None:
+    """Разовая публикация визитки канала и закрепление её наверху."""
+    folder = ROOT / "assets" / "intro"
+    text = (folder / "intro_tg.txt").read_text(encoding="utf-8")
+    msg = tg.media(tg.channel, "photo", folder / "intro_tg.png", text)
+    tg.call("pinChatMessage", {"chat_id": tg.channel, "message_id": msg["message_id"],
+                               "disable_notification": True})
+    print("Визитка опубликована и закреплена")
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("slot", choices=[*SLOTS, "report", "auto"])
+    ap.add_argument("slot", choices=[*SLOTS, "report", "auto", "intro"])
     ap.add_argument("--date")
     args = ap.parse_args()
     tg = TG()
     if args.slot == "auto":
         auto(tg)
+        return
+    if args.slot == "intro":
+        intro(tg)
         return
     now = datetime.now(MSK)
     if args.date is None:
