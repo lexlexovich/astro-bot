@@ -10,5 +10,11 @@
   "video": {
     "ok": true,
     "at": "2026-10-17T20:30+03:00"
-  }
+  },
+  "evening": {
+    "ok": true,
+    "at": "2026-10-17T22:42+03:00",
+    "poll_message_id": 29
+  },
+  "report_sent": true
 }
