@@ -14,7 +14,8 @@
   "evening": {
     "ok": true,
     "at": "2026-10-16T23:04+03:00",
-    "poll_message_id": 24
+    "poll_message_id": 24,
+    "poll_reported": true
   },
   "report_sent": true
 }
