@@ -3,5 +3,10 @@
   "video": {
     "ok": true,
     "at": "2026-10-18T21:10+03:00"
+  },
+  "evening": {
+    "ok": true,
+    "at": "2026-10-18T21:11+03:00",
+    "poll_message_id": 32
   }
 }
