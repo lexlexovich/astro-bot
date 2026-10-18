@@ -71,9 +71,9 @@ def paper_balance(im: Image.Image) -> Image.Image:
     return Image.merge("RGB", (r, g, b))
 
 
-def ink_and_red(im: Image.Image) -> Image.Image:
+def ink_and_red(im: Image.Image, keep_reds: bool = False) -> Image.Image:
     """Для карт, где генератор ушёл в золото и сепию: всё переводим в тушь на бумаге,
-    золотые монеты — в фирменный красный, родной красный оставляем."""
+    золотые монеты — в фирменный красный (keep_reds=True сохраняет родной красный)."""
     import numpy as np
     hsv = np.asarray(im.convert("HSV")).astype(np.float32)
     rgb = np.asarray(im).astype(np.float32)
@@ -84,13 +84,23 @@ def ink_and_red(im: Image.Image) -> Image.Image:
     ink, paper = np.array([20, 18, 16]), np.array(PAPER)
     out = ink + (paper - ink) * t
     gold = (h > 30) & (h < 62) & (s > 0.7) & (v > 0.55)
-    # закрываем блики внутри монет, не задевая бумагу
-    from PIL import ImageFilter
-    m = Image.fromarray((gold * 255).astype("uint8")).filter(ImageFilter.MaxFilter(7)).filter(ImageFilter.MinFilter(7))
-    gold = np.asarray(m) > 127
+    # монета = крупный, круглый и плотный золотой диск; бык, плащ, волосы и крапинки на бумаге — в тушь
+    from scipy import ndimage
+    gold = ndimage.binary_fill_holes(ndimage.binary_closing(gold, iterations=3))
+    yy, xx = np.mgrid[-15:16, -15:16]
+    core = ndimage.binary_opening(gold, structure=(xx ** 2 + yy ** 2) <= 225)
+    lab, n = ndimage.label(core)
+    ok = []
+    for j, sl in enumerate(ndimage.find_objects(lab), start=1):
+        hh, ww = sl[0].stop - sl[0].start, sl[1].stop - sl[1].start
+        area = (lab[sl] == j).sum()
+        if area > gold.size * 0.008 and 0.7 < hh / ww < 1.4 and area / (hh * ww) > 0.6:
+            ok.append(j)
+    gold = gold & ndimage.binary_dilation(np.isin(lab, ok), iterations=4)
     out[gold] = (np.array([200, 38, 30]) * np.clip(v[..., None] * 0.95, 0, 1))[gold]
-    reds = ((h < 18) | (h > 340)) & (s > 0.55) & (v > 0.3)
-    out[reds] = rgb[reds]
+    if keep_reds:
+        reds = ((h < 12) | (h > 348)) & (s > 0.6) & (v > 0.35)
+        out[reds] = rgb[reds]
     return Image.fromarray(out.astype("uint8"))
 
 
