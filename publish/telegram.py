@@ -209,7 +209,54 @@ def report(day: str, tg: TG) -> None:
     else:
         lines.append("Завтра: выпуска пока нет — Claude готовит его в 20:00, проверьте позже")
     lines.insert(1, f"Вышло {done} из {len(SLOTS)}")
+    lines += stats_lines(day, tg)
     tg.alert("\n".join(lines))
+
+
+def fmt(n) -> str:
+    return f"{int(n):,}".replace(",", " ")
+
+
+def delta(n) -> str:
+    return "" if n in (None, 0) else f" ({'+' if n > 0 else ''}{int(n)})"
+
+
+def stats_lines(day: str, tg: TG) -> list[str]:
+    """Статистика для вечернего отчёта: подписчики Telegram (через бота) и соцсети из stats.json,
+    который в 21:42 пишет задача Claude по данным Metricool."""
+    lines = ["", "📊 Статистика"]
+    folder = ROOT / "content" / day
+    try:
+        members = int(tg.call("getChatMemberCount", {"chat_id": tg.channel}))
+        prev = load_status(ROOT / "content" / (datetime.fromisoformat(day) - timedelta(days=1)).date().isoformat()).get("tg_members")
+        lines.append(f"Telegram: {fmt(members)} подп.{delta(members - prev if prev is not None else None)}")
+        status = load_status(folder)
+        status["tg_members"] = members
+        save_status(folder, status)
+    except Exception as exc:
+        print(f"Не удалось получить подписчиков Telegram: {exc}", file=sys.stderr)
+    f = folder / "stats.json"
+    if not f.exists():
+        lines.append("Соцсети: данных Metricool за сегодня нет")
+        return lines
+    try:
+        st = json.loads(f.read_text(encoding="utf-8"))
+        for n in st.get("networks", []):
+            parts = []
+            if n.get("followers") is not None:
+                parts.append(f"{fmt(n['followers'])} подп.{delta(n.get('followers_delta'))}")
+            for key, label in (("views", "просм."), ("likes", "лайк."), ("comments", "комм.")):
+                if n.get(key):
+                    parts.append(f"{fmt(n[key])} {label}")
+            lines.append(f"{n.get('name')}: " + (", ".join(parts) if parts else "нет данных"))
+        top = st.get("top")
+        if top:
+            lines.append(f"🔥 Лучшее за 7 дней: {top.get('title')} — {fmt(top.get('views', 0))} просмотров ({top.get('network')})")
+        if st.get("note"):
+            lines.append(st["note"])
+    except Exception as exc:
+        lines.append(f"Соцсети: не удалось прочитать stats.json ({exc})")
+    return lines
 
 
 AUTO_WINDOW_HOURS = 3
@@ -249,7 +296,9 @@ def auto(tg: TG) -> None:
     h, m = SLOT_TIME["report"]
     if now >= now.replace(hour=h, minute=m, second=0, microsecond=0):
         status = load_status(folder)
-        if not status.get("report_sent"):
+        # ждём статистику соцсетей от задачи Claude до 22:15, потом отправляем без неё
+        waiting = not (folder / "stats.json").exists() and now < now.replace(hour=22, minute=15, second=0, microsecond=0)
+        if not status.get("report_sent") and not waiting:
             report(day, tg)
             status = load_status(folder)
             status["report_sent"] = True
