@@ -11,5 +11,7 @@
     "ok": true,
     "at": "2026-10-20T21:03+03:00",
     "poll_message_id": 41
-  }
+  },
+  "tg_members": 2,
+  "report_sent": true
 }
