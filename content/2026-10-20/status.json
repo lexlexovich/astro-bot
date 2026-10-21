@@ -14,5 +14,9 @@
     "poll_reported": true
   },
   "tg_members": 2,
-  "report_sent": true
+  "report_sent": true,
+  "video": {
+    "ok": true,
+    "at": "2026-10-21T15:01+03:00"
+  }
 }
