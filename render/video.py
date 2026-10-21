@@ -77,15 +77,32 @@ def frame(issue: dict, onscreen: str, voice: str, n: int, total: int, out: Path)
     img.save(out)
 
 
-def ending(issue: dict, out: Path):
+def outro_text(issue: dict) -> tuple[str, str]:
+    """Финальный призыв: (строка на экране, что говорит Вега). Можно задать в posts.video.outro."""
+    v = issue["posts"]["video"]
+    if v.get("outro"):
+        return v["outro"].get("onscreen", "Разбор — в Telegram"), v["outro"]["voice"]
+    title = (v.get("title", "") + " " + v.get("cover_headline", "")).lower()
+    if "совместим" in title or "+" in v.get("cover_headline", ""):
+        return ("Разберу вашу пару",
+                "Хотите разбор своей пары? Найдите в Телеграме канал «Меркурий виноват» и напишите свои знаки.")
+    return ("Гороскоп на каждый день",
+            "Полный гороскоп для вашего знака — каждое утро в Телеграме. Канал «Меркурий виноват».")
+
+
+def ending(issue: dict, out: Path, onscreen: str = "Больше — в Telegram"):
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)
     double_rule(d, M, W - M, 230)
-    hf = oswald(120)
-    draw_lines(d, (M, 520), ["БОЛЬШЕ —", "В TELEGRAM"], hf, INK, 140)
-    d.text((M, 840), "t.me/merkuriy_vinovat", font=oswald(64, "Medium"), fill=RED)
-    d.text((M, 940), "Ведёт AI-астролог Вега", font=serif(44, "Italic"), fill=INK)
-    mercury(img, 800, 1150, 300)
+    d.text((M, 252), "МЕРКУРИЙ ВИНОВАТ", font=oswald(34), fill=INK)
+    d.rectangle([M, 310, W - M, 312], fill=INK)
+    text = onscreen.upper()
+    hf = fit_font(d, text, oswald, W - 2 * M, 3, 120, 72)
+    y = draw_lines(d, (M, 430), wrap(d, text, hf, W - 2 * M), hf, INK, int(hf.size * 1.12)) + 50
+    d.text((M, y), "TELEGRAM", font=oswald(56, "Medium"), fill=INK)
+    d.text((M, y + 80), "@merkuriy_vinovat", font=oswald(92, "Medium"), fill=RED)
+    d.text((M, y + 210), "Поиск: «Меркурий виноват»", font=serif(46, "Italic"), fill=INK)
+    mercury(img, 800, 1250, 260)
     img.save(out)
 
 
@@ -163,10 +180,15 @@ def build(folder: Path) -> Path:
         images.append(img); audios.append(a); durs.append(dur)
 
     end = tmp / "end.png"
-    ending(issue, end)
+    end_screen, end_voice = outro_text(issue)
+    ending(issue, end, end_screen)
     a = tmp / "aend.mp3"
-    silence(2.0, a)
-    images.append(end); audios.append(a); durs.append(2.0)
+    engine = tts(end_voice, a)
+    engines.append(engine)
+    if not engine:
+        silence(3.0, a)
+    dur = max(3.0, duration(a) + 1.2)
+    images.append(end); audios.append(a); durs.append(dur)
 
     # видео-дорожка из картинок с длительностями
     lst = tmp / "images.txt"
