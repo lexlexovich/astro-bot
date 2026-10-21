@@ -269,6 +269,10 @@ def auto(tg: TG) -> None:
     now = datetime.now(MSK)
     day = now.date().isoformat()
     folder = ROOT / "content" / day
+    from publish.requests import collect
+    n = collect(tg)
+    if n:
+        print(f"Новых заявок на разбор пары: {n}")
     if not (folder / "issue.json").exists():
         folder.mkdir(parents=True, exist_ok=True)
         status = load_status(folder)
