@@ -259,7 +259,7 @@ def stats_lines(day: str, tg: TG) -> list[str]:
     return lines
 
 
-AUTO_WINDOW_HOURS = 3
+LAST_PUBLISH_HOUR = 23  # опоздавший слот догоняем в тот же день до 23:00, ночью не публикуем
 MAX_ATTEMPTS = 3
 
 
@@ -282,13 +282,15 @@ def auto(tg: TG) -> None:
         h, m = SLOT_TIME[slot]
         planned = now.replace(hour=h, minute=m, second=0, microsecond=0)
         late = (now - planned).total_seconds() / 3600
-        if late < 0 or late > AUTO_WINDOW_HOURS:
+        if late < 0 or now.hour >= LAST_PUBLISH_HOUR:
             continue
         st = load_status(folder).get(slot, {})
         if st.get("ok") or st.get("attempts", 0) >= MAX_ATTEMPTS:
             continue
         try:
             publish(slot, day, tg)
+            if late > 1:
+                tg.alert(f"⏰ «{SLOTS[slot]}» вышел с опозданием {late:.1f} ч — расписание GitHub пропустило запуск.")
         except SystemExit:
             status = load_status(folder)
             status.setdefault(slot, {})["attempts"] = st.get("attempts", 0) + 1
