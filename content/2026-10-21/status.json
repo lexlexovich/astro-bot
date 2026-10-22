@@ -14,7 +14,8 @@
   "evening": {
     "ok": true,
     "at": "2026-10-21T21:36+03:00",
-    "poll_message_id": 47
+    "poll_message_id": 47,
+    "poll_reported": true
   },
   "tg_members": 2,
   "report_sent": true
