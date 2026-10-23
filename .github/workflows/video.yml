@@ -26,8 +26,16 @@ jobs:
         with:
           python-version: '3.12'
       - name: Установить зависимости
+        timeout-minutes: 10
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg
+          # apt-зеркала иногда висят по 20+ минут — ставим с таймаутом, иначе берём статическую сборку ffmpeg
+          if ! command -v ffmpeg >/dev/null; then
+            timeout 150 sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 install -y -qq --no-install-recommends ffmpeg \
+              || (timeout 120 sudo apt-get -o Acquire::http::Timeout=20 update -qq && timeout 150 sudo apt-get install -y -qq --no-install-recommends ffmpeg) \
+              || (curl -sSL --max-time 180 https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz | tar xJ -C /tmp \
+                  && sudo cp /tmp/ffmpeg-*-static/ffmpeg /tmp/ffmpeg-*-static/ffprobe /usr/local/bin/)
+          fi
+          ffmpeg -version | head -1
           pip install -r requirements.txt
 
       - name: Собрать карточки и видео
