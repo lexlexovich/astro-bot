@@ -219,6 +219,14 @@ def build(folder: Path) -> Path:
         "-c:v", "libx264", "-preset", "medium", "-crf", "23",
         "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(out),
     ], check=True)
+    # Версия для TikTok — без финального кадра с Telegram (TikTok скрывает ролики, уводящие на другие площадки)
+    tt_len = sum(durs) - durs[-1]
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error", "-i", str(out), "-t", f"{tt_len:.2f}",
+        "-af", f"afade=t=out:st={max(0.0, tt_len - 1.0):.2f}:d=1",
+        "-c:v", "libx264", "-preset", "medium", "-crf", "23", "-c:a", "aac", "-b:a", "128k",
+        "-movflags", "+faststart", str(folder / "video_tt.mp4"),
+    ], check=True)
     shutil.rmtree(tmp, ignore_errors=True)
     (folder / "video.json").write_text(json.dumps({"voiced": voiced, "engines": engines, "seconds": round(sum(durs), 1),
                                                    "errors": TTS_ERRORS[:4],
