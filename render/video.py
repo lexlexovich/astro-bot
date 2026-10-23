@@ -148,18 +148,23 @@ def silence(seconds: float, out: Path):
                     "-t", f"{seconds:.2f}", "-c:a", "libmp3lame", str(out)], check=True)
 
 
-def build(folder: Path) -> Path:
+def build(folder: Path, key: str = "video") -> Path:
+    """key="video" — основное видео (+ video_tt.mp4 без кадра про Telegram).
+    key="video2" — второй ролик только для TikTok: сразу video2_tt.mp4, без финального кадра."""
     folder = folder.resolve()
     issue = json.loads((folder / "issue.json").read_text(encoding="utf-8"))
+    main = key == "video"
+    if not main:  # дальше код читает posts.video — подставляем второй сценарий
+        issue = {**issue, "posts": {**issue["posts"], "video": issue["posts"][key]}}
     script = issue["posts"]["video"]["script"]
     tmp = Path(tempfile.mkdtemp())
     images, audios, durs = [], [], []
 
     # 1) обложка — первый кадр
-    cover = folder / "cover.png"
+    cover = folder / ("cover.png" if main else f"cover_{key}.png")
     if not cover.exists():
         from render.cards import video_cover
-        video_cover(issue, cover)
+        video_cover(issue, cover, clean=not main)
     a = tmp / "a00.mp3"
     silence(COVER_SECONDS, a)
     images.append(cover); audios.append(a); durs.append(COVER_SECONDS)
@@ -178,6 +183,9 @@ def build(folder: Path) -> Path:
             silence(max(3.0, words / 2.6), a)
         dur = duration(a) + 0.35
         images.append(img); audios.append(a); durs.append(dur)
+
+    if not main:
+        return _finish(folder, key, issue, tmp, images, audios, durs, voiced, engines)
 
     end = tmp / "end.png"
     end_screen, end_voice = outro_text(issue)
@@ -236,5 +244,42 @@ def build(folder: Path) -> Path:
     return out
 
 
+def _finish(folder: Path, key: str, issue: dict, tmp: Path, images, audios, durs, voiced, engines) -> Path:
+    lst = tmp / "images.txt"
+    with open(lst, "w") as fh:
+        for img, dur in zip(images, durs):
+            fh.write(f"file '{img}'\nduration {dur:.2f}\n")
+        fh.write(f"file '{images[-1]}'\n")
+    alst = tmp / "audio.txt"
+    with open(alst, "w") as fh:
+        for a, dur in zip(audios, durs):
+            padded = a.with_suffix(".pad.wav")
+            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(a), "-af", "apad",
+                            "-t", f"{dur:.2f}", "-ar", "44100", "-ac", "2", str(padded)], check=True)
+            fh.write(f"file '{padded}'\n")
+    audio = tmp / "voice.wav"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "concat", "-safe", "0", "-i", str(alst),
+                    "-c", "copy", str(audio)], check=True)
+    track = pick_track(issue)
+    if track and track.exists():
+        mixed = tmp / "mixed.wav"
+        mix_music(audio, track, sum(durs), mixed)
+        audio = mixed
+    out = folder / f"{key}_tt.mp4"
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error",
+        "-f", "concat", "-safe", "0", "-i", str(lst), "-i", str(audio),
+        "-vf", "scale=1080:1920,format=yuv420p,fps=30",
+        "-c:v", "libx264", "-preset", "medium", "-crf", "23",
+        "-c:a", "aac", "-b:a", "128k", "-shortest", "-movflags", "+faststart", str(out),
+    ], check=True)
+    shutil.rmtree(tmp, ignore_errors=True)
+    (folder / f"{key}.json").write_text(json.dumps({"voiced": voiced, "engines": engines, "seconds": round(sum(durs), 1),
+                                                    "errors": TTS_ERRORS[:4], "music": track.name if track else None},
+                                                   ensure_ascii=False), encoding="utf-8")
+    print(f"Видео готово: {out} ({sum(durs):.1f} с)")
+    return out
+
+
 if __name__ == "__main__":
-    build(Path(sys.argv[1]))
+    build(Path(sys.argv[1]), sys.argv[2] if len(sys.argv) > 2 else "video")

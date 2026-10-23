@@ -286,9 +286,11 @@ def tarot_card(issue: dict, out: Path):
     img.save(out, optimize=True)
 
 
-def video_cover(issue: dict, out: Path, headline: str | None = None, sub: str | None = None):
+def video_cover(issue: dict, out: Path, headline: str | None = None, sub: str | None = None,
+                key: str = "video", clean: bool = False):
+    """Обложка видео. clean=True — без ссылки на Telegram (для роликов только в TikTok)."""
     W, H, M = 1080, 1920, 80
-    v = issue["posts"]["video"]
+    v = issue["posts"][key]
     headline = (headline or v["cover_headline"]).upper()
     sub = sub or v.get("cover_sub", "")
     img = Image.new("RGB", (W, H), PAPER)
@@ -308,7 +310,8 @@ def video_cover(issue: dict, out: Path, headline: str | None = None, sub: str | 
     stamp(img, "ВИНОВАТ", (750, 1380), 62)
     ff = oswald(36, "Medium")
     d.text((M, 1290), "Ведёт AI-астролог Вега", font=ff, fill=INK)
-    d.text((M, 1338), "t.me/merkuriy_vinovat", font=ff, fill=INK)
+    if not clean:
+        d.text((M, 1338), "t.me/merkuriy_vinovat", font=ff, fill=INK)
     img.save(out, optimize=True)
 
 
