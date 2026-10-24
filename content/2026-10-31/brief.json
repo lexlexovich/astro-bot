@@ -1,0 +1,215 @@
+{
+  "date": "2026-10-31",
+  "weekday": "суббота",
+  "issue_no": 19,
+  "sky": {
+    "date": "2026-10-31",
+    "computed_for": "07:00 Europe/Moscow",
+    "planets": {
+      "sun": {
+        "name": "Солнце",
+        "sign": "Sco",
+        "sign_ru": "Скорпион",
+        "sign_ru_in": "Скорпионе",
+        "degree": 7.7,
+        "abs": 217.74,
+        "retrograde": false
+      },
+      "moon": {
+        "name": "Луна",
+        "sign": "Can",
+        "sign_ru": "Рак",
+        "sign_ru_in": "Раке",
+        "degree": 15.6,
+        "abs": 105.61,
+        "retrograde": false
+      },
+      "mercury": {
+        "name": "Меркурий",
+        "sign": "Sco",
+        "sign_ru": "Скорпион",
+        "sign_ru_in": "Скорпионе",
+        "degree": 17.5,
+        "abs": 227.54,
+        "retrograde": true
+      },
+      "venus": {
+        "name": "Венера",
+        "sign": "Lib",
+        "sign_ru": "Весы",
+        "sign_ru_in": "Весах",
+        "degree": 26.7,
+        "abs": 206.67,
+        "retrograde": true
+      },
+      "mars": {
+        "name": "Марс",
+        "sign": "Leo",
+        "sign_ru": "Лев",
+        "sign_ru_in": "Льве",
+        "degree": 18.2,
+        "abs": 138.2,
+        "retrograde": false
+      },
+      "jupiter": {
+        "name": "Юпитер",
+        "sign": "Leo",
+        "sign_ru": "Лев",
+        "sign_ru_in": "Льве",
+        "degree": 24.2,
+        "abs": 144.22,
+        "retrograde": false
+      },
+      "saturn": {
+        "name": "Сатурн",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 9.3,
+        "abs": 9.34,
+        "retrograde": true
+      },
+      "uranus": {
+        "name": "Уран",
+        "sign": "Gem",
+        "sign_ru": "Близнецы",
+        "sign_ru_in": "Близнецах",
+        "degree": 4.7,
+        "abs": 64.71,
+        "retrograde": true
+      },
+      "neptune": {
+        "name": "Нептун",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 2.1,
+        "abs": 2.1,
+        "retrograde": true
+      },
+      "pluto": {
+        "name": "Плутон",
+        "sign": "Aqu",
+        "sign_ru": "Водолей",
+        "sign_ru_in": "Водолее",
+        "degree": 3.1,
+        "abs": 303.12,
+        "retrograde": false
+      }
+    },
+    "retrograde": [
+      "Меркурий",
+      "Венера",
+      "Сатурн",
+      "Уран",
+      "Нептун"
+    ],
+    "moon": {
+      "name": "Луна",
+      "sign": "Can",
+      "sign_ru": "Рак",
+      "sign_ru_in": "Раке",
+      "degree": 15.6,
+      "abs": 105.61,
+      "retrograde": false,
+      "phase": "убывающая Луна",
+      "angle": 247.9,
+      "illumination_pct": 69,
+      "waxing": false
+    },
+    "aspects": [
+      {
+        "a": "Меркурий",
+        "b": "Марс",
+        "aspect": "квадрат",
+        "orb": 0.7
+      },
+      {
+        "a": "Нептун",
+        "b": "Плутон",
+        "aspect": "секстиль",
+        "orb": 1.0
+      },
+      {
+        "a": "Уран",
+        "b": "Плутон",
+        "aspect": "трин",
+        "orb": 1.6
+      },
+      {
+        "a": "Луна",
+        "b": "Меркурий",
+        "aspect": "трин",
+        "orb": 1.9
+      },
+      {
+        "a": "Венера",
+        "b": "Юпитер",
+        "aspect": "секстиль",
+        "orb": 2.4
+      },
+      {
+        "a": "Уран",
+        "b": "Нептун",
+        "aspect": "секстиль",
+        "orb": 2.6
+      },
+      {
+        "a": "Солнце",
+        "b": "Плутон",
+        "aspect": "квадрат",
+        "orb": 4.6
+      }
+    ],
+    "events_next_7_days": []
+  },
+  "tarot": {
+    "name": "Умеренность",
+    "arcana": "старший аркан",
+    "number": 14
+  },
+  "recent_issues": [
+    {
+      "date": "2026-10-24",
+      "headline": "Солнце вошло в Скорпион",
+      "video": "Сезон Скорпиона начался",
+      "evening": "напишите в комментариях…"
+    },
+    {
+      "date": "2026-10-25",
+      "headline": "Меркурий развернулся. Без паники",
+      "video": "Меркурий ретроградный: прогноз на неделю 26 октября – 1 ноября",
+      "evening": "опрос"
+    },
+    {
+      "date": "2026-10-26",
+      "headline": "Полнолуние в Тельце: всё всплывает",
+      "video": "Полнолуние в Тельце: что оно подсвечивает",
+      "evening": "опрос по стихиям"
+    },
+    {
+      "date": "2026-10-27",
+      "headline": "Солнце против Плутона: кто тут главный",
+      "video": "Овен и Весы: это любовь?",
+      "evening": "мем-ситуация «когда Меркурий…»"
+    },
+    {
+      "date": "2026-10-28",
+      "headline": "Луна встретила Уран: день идей",
+      "video": "Лев и Водолей: это любовь?",
+      "evening": "совместимость"
+    },
+    {
+      "date": "2026-10-29",
+      "headline": "Меркурий спорит с Марсом. Не ведитесь",
+      "video": "Близнецы и Стрелец: это любовь?",
+      "evening": "напишите в комментариях…"
+    },
+    {
+      "date": "2026-10-30",
+      "headline": "Луна вернулась домой, в Рак",
+      "video": "Звёзды на допросе: Лев",
+      "evening": "Меркурий не виноват"
+    }
+  ]
+}
