@@ -347,12 +347,45 @@ def story_card(issue: dict, out: Path):
     img.save(out, optimize=True)
 
 
+def affirmation_card(issue: dict, out: Path, clean: bool = False):
+    """Аффирмация дня 1080×1920: Telegram, сторис Instagram, кадр ролика. clean=True — без ссылки на Telegram."""
+    W, H, M = 1080, 1920, 80
+    a = issue["posts"]["affirmation"]
+    img = Image.new("RGB", (W, H), PAPER)
+    d = ImageDraw.Draw(img)
+    y = 250
+    double_rule(d, M, W - M, y)
+    mf = oswald(34)
+    d.text((M, y + 22), "МЕРКУРИЙ ВИНОВАТ", font=mf, fill=INK)
+    d.text((W - M, y + 22), "АФФИРМАЦИЯ ДНЯ", font=mf, fill=INK, anchor="ra")
+    d.rectangle([M, y + 80, W - M, y + 82], fill=INK)
+    y = tag(d, (M, 470), "ПОВТОРЯТЬ ВСЛУХ", 40) + 60
+    text = f"«{a['text']}»"
+    tf = fit_font(d, text, lambda s: serif(s, "Italic"), W - 2 * M, 7, 92, 52)
+    y = draw_lines(d, (M, y), wrap(d, text, tf, W - 2 * M), tf, INK, int(tf.size * 1.25)) + 40
+    d.rectangle([M, y, M + 160, y + 10], fill=RED)
+    y += 50
+    if a.get("note"):
+        nf = serif(40)
+        y = draw_lines(d, (M, y), wrap(d, a["note"], nf, W - 2 * M)[:3], nf, INK, 54) + 40
+    ff = oswald(36, "Medium")
+    y = max(y, 1420)
+    d.text((M, y), "— Вега, AI-астролог", font=ff, fill=INK)
+    if not clean:
+        d.text((M, y + 48), "t.me/merkuriy_vinovat", font=ff, fill=INK)
+    mercury(img, 800, max(y, 1500), 240)
+    img.save(out, optimize=True)
+
+
 def render_issue(folder: Path):
     issue = json.loads((folder / "issue.json").read_text(encoding="utf-8"))
     horoscope_card(issue, folder / "horoscope.png")
     tarot_card(issue, folder / "tarot.png")
     video_cover(issue, folder / "cover.png")
     story_card(issue, folder / "story.png")
+    if issue["posts"].get("affirmation"):
+        affirmation_card(issue, folder / "affirmation.png")
+        Image.open(folder / "affirmation.png").convert("RGB").save(folder / "affirmation.jpg", quality=92)
     # TikTok принимает фото только в JPEG/WebP
     for name in ("horoscope", "tarot"):
         Image.open(folder / f"{name}.png").convert("RGB").save(folder / f"{name}.jpg", quality=92)

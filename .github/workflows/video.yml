@@ -47,10 +47,11 @@ jobs:
             d=$(dirname "$f"); day=$(basename "$d")
             if [ -n "$DAY" ] && [ "$day" != "$DAY" ]; then continue; fi
             if [ -z "$DAY" ] && [[ "$day" < "$today" ]]; then continue; fi
-            if [ -n "$DAY" ]; then rm -f "$d/video.mp4" "$d/video2_tt.mp4"; fi
+            if [ -n "$DAY" ]; then rm -f "$d/video.mp4" "$d/video2_tt.mp4" "$d/affirmation_tt.mp4"; fi
             python -m render.cards "$d"
             if [ ! -f "$d/video.mp4" ]; then python -m render.video "$d"; fi
             if grep -q '"video2"' "$f" && [ ! -f "$d/video2_tt.mp4" ]; then python -m render.video "$d" video2; fi
+            if grep -q '"affirmation"' "$f" && [ ! -f "$d/affirmation_tt.mp4" ]; then python -m render.video "$d" affirmation; fi
           done
 
       - name: Сохранить

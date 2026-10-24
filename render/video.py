@@ -281,5 +281,46 @@ def _finish(folder: Path, key: str, issue: dict, tmp: Path, images, audios, durs
     return out
 
 
+def build_affirmation(folder: Path) -> Path:
+    """Короткий ролик аффирмации для TikTok и YouTube: карточка без ссылки, голос Веги, лёгкая музыка."""
+    from render.cards import affirmation_card
+    folder = folder.resolve()
+    issue = json.loads((folder / "issue.json").read_text(encoding="utf-8"))
+    a = issue["posts"]["affirmation"]
+    tmp = Path(tempfile.mkdtemp())
+    card = tmp / "card.png"
+    affirmation_card(issue, card, clean=True)
+    voice = tmp / "voice.mp3"
+    engine = tts("Аффирмация дня от Веги. " + a["text"], voice)
+    if not engine:
+        silence(6.0, voice)
+    dur = duration(voice) + 1.8
+    wav = tmp / "voice.wav"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(voice), "-af", "adelay=500|500,apad",
+                    "-t", f"{dur:.2f}", "-ar", "44100", "-ac", "2", str(wav)], check=True)
+    audio = wav
+    track = pick_track({**issue, "posts": {**issue["posts"], "video": {"music": "light"}}})
+    if track and track.exists():
+        mixed = tmp / "mixed.wav"
+        mix_music(wav, track, dur, mixed)
+        audio = mixed
+    out = folder / "affirmation_tt.mp4"
+    frames = int(dur * 30)
+    subprocess.run([
+        "ffmpeg", "-y", "-loglevel", "error", "-loop", "1", "-i", str(card), "-i", str(audio),
+        "-vf", f"scale=1188:2112,zoompan=z='min(zoom+0.0006,1.06)':d={frames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=30,format=yuv420p",
+        "-t", f"{dur:.2f}", "-c:v", "libx264", "-preset", "medium", "-crf", "23",
+        "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", str(out),
+    ], check=True)
+    shutil.rmtree(tmp, ignore_errors=True)
+    (folder / "affirmation.json").write_text(json.dumps({"voiced": bool(engine), "seconds": round(dur, 1)},
+                                                        ensure_ascii=False), encoding="utf-8")
+    print(f"Аффирмация готова: {out} ({dur:.1f} с)")
+    return out
+
+
 if __name__ == "__main__":
-    build(Path(sys.argv[1]), sys.argv[2] if len(sys.argv) > 2 else "video")
+    if len(sys.argv) > 2 and sys.argv[2] == "affirmation":
+        build_affirmation(Path(sys.argv[1]))
+    else:
+        build(Path(sys.argv[1]), sys.argv[2] if len(sys.argv) > 2 else "video")

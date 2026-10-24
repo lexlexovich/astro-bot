@@ -21,12 +21,13 @@ MSK = ZoneInfo("Europe/Moscow")
 API = "https://api.telegram.org/bot{token}/{method}"
 SLOTS = {
     "morning": "07:30 Гороскоп дня",
+    "affirmation": "10:00 Аффирмация дня",
     "tarot": "12:30 Карта Таро",
     "video": "18:00 Видео",
     "evening": "21:00 Вечерний пост",
 }
 CAPTION_LIMIT = 1024
-SLOT_TIME = {"morning": (7, 30), "tarot": (12, 30), "video": (18, 0), "evening": (21, 0), "report": (21, 40)}
+SLOT_TIME = {"morning": (7, 30), "affirmation": (10, 0), "tarot": (12, 30), "video": (18, 0), "evening": (21, 0), "report": (21, 40)}
 MAX_LATE_HOURS = 3  # запуск по расписанию, опоздавший сильнее и перешедший за полночь, не публикуем
 
 
@@ -146,7 +147,12 @@ def publish(slot: str, day: str, tg: TG) -> None:
     if status.get(slot, {}).get("ok"):
         print(f"{slot} уже опубликован, пропускаю")
         return
-    post = issue["posts"][slot]
+    post = issue["posts"].get(slot)
+    if post is None:  # в старых выпусках нет аффирмации — слот просто пропускаем
+        status[slot] = {"ok": True, "skipped": True}
+        save_status(folder, status)
+        print(f"{slot}: нет в выпуске, пропуск")
+        return
     try:
         extra = {}
         if slot == "morning":
@@ -155,6 +161,12 @@ def publish(slot: str, day: str, tg: TG) -> None:
                 poll_summary(tg, day, msg.get("message_id"))
             except Exception as exc:  # итоги опроса не должны ронять утренний пост
                 print(f"Итоги опроса: {exc}", file=sys.stderr)
+        elif slot == "affirmation":
+            caption = f"Аффирмация дня ✨\n\n«{post['text']}»"
+            if post.get("note"):
+                caption += f"\n\n{post['note']}"
+            caption += "\n\nСохраните и повторяйте, когда Меркурий опять что-то учудит."
+            tg.media(tg.channel, "photo", folder / "affirmation.png", caption)
         elif slot == "tarot":
             tg.media(tg.channel, "photo", folder / "tarot.png", post["text"])
         elif slot == "video":
