@@ -18,6 +18,7 @@
   "evening": {
     "ok": true,
     "at": "2026-11-04T21:15+03:00",
-    "poll_message_id": 125
+    "poll_message_id": 125,
+    "poll_reported": true
   }
 }
