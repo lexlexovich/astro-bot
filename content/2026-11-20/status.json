@@ -1,3 +1,24 @@
 {
-  "missing_alerted": true
+  "missing_alerted": true,
+  "morning": {
+    "ok": true,
+    "at": "2026-11-20T22:11+03:00"
+  },
+  "affirmation": {
+    "ok": true,
+    "at": "2026-11-20T22:11+03:00"
+  },
+  "tarot": {
+    "ok": true,
+    "at": "2026-11-20T22:11+03:00"
+  },
+  "video": {
+    "ok": true,
+    "at": "2026-11-20T22:11+03:00"
+  },
+  "evening": {
+    "ok": true,
+    "at": "2026-11-20T22:11+03:00",
+    "poll_message_id": 202
+  }
 }
