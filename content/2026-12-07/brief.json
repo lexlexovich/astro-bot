@@ -1,0 +1,222 @@
+{
+  "date": "2026-12-07",
+  "weekday": "понедельник",
+  "issue_no": 56,
+  "sky": {
+    "date": "2026-12-07",
+    "computed_for": "07:00 Europe/Moscow",
+    "planets": {
+      "sun": {
+        "name": "Солнце",
+        "sign": "Sag",
+        "sign_ru": "Стрелец",
+        "sign_ru_in": "Стрельце",
+        "degree": 15.0,
+        "abs": 255.05,
+        "retrograde": false
+      },
+      "moon": {
+        "name": "Луна",
+        "sign": "Sco",
+        "sign_ru": "Скорпион",
+        "sign_ru_in": "Скорпионе",
+        "degree": 24.4,
+        "abs": 234.37,
+        "retrograde": false
+      },
+      "mercury": {
+        "name": "Меркурий",
+        "sign": "Sag",
+        "sign_ru": "Стрелец",
+        "sign_ru_in": "Стрельце",
+        "degree": 1.2,
+        "abs": 241.23,
+        "retrograde": false
+      },
+      "venus": {
+        "name": "Венера",
+        "sign": "Sco",
+        "sign_ru": "Скорпион",
+        "sign_ru_in": "Скорпионе",
+        "degree": 1.9,
+        "abs": 211.88,
+        "retrograde": false
+      },
+      "mars": {
+        "name": "Марс",
+        "sign": "Vir",
+        "sign_ru": "Дева",
+        "sign_ru_in": "Деве",
+        "degree": 4.1,
+        "abs": 154.11,
+        "retrograde": false
+      },
+      "jupiter": {
+        "name": "Юпитер",
+        "sign": "Leo",
+        "sign_ru": "Лев",
+        "sign_ru_in": "Льве",
+        "degree": 27.0,
+        "abs": 146.97,
+        "retrograde": false
+      },
+      "saturn": {
+        "name": "Сатурн",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 7.9,
+        "abs": 7.94,
+        "retrograde": true
+      },
+      "uranus": {
+        "name": "Уран",
+        "sign": "Gem",
+        "sign_ru": "Близнецы",
+        "sign_ru_in": "Близнецах",
+        "degree": 3.2,
+        "abs": 63.21,
+        "retrograde": true
+      },
+      "neptune": {
+        "name": "Нептун",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 1.6,
+        "abs": 1.62,
+        "retrograde": true
+      },
+      "pluto": {
+        "name": "Плутон",
+        "sign": "Aqu",
+        "sign_ru": "Водолей",
+        "sign_ru_in": "Водолее",
+        "degree": 3.7,
+        "abs": 303.69,
+        "retrograde": false
+      }
+    },
+    "retrograde": [
+      "Сатурн",
+      "Уран",
+      "Нептун"
+    ],
+    "moon": {
+      "name": "Луна",
+      "sign": "Sco",
+      "sign_ru": "Скорпион",
+      "sign_ru_in": "Скорпионе",
+      "degree": 24.4,
+      "abs": 234.37,
+      "retrograde": false,
+      "phase": "убывающий серп",
+      "angle": 339.3,
+      "illumination_pct": 3,
+      "waxing": false
+    },
+    "aspects": [
+      {
+        "a": "Меркурий",
+        "b": "Нептун",
+        "aspect": "трин",
+        "orb": 0.4
+      },
+      {
+        "a": "Уран",
+        "b": "Плутон",
+        "aspect": "трин",
+        "orb": 0.5
+      },
+      {
+        "a": "Марс",
+        "b": "Уран",
+        "aspect": "квадрат",
+        "orb": 0.9
+      },
+      {
+        "a": "Уран",
+        "b": "Нептун",
+        "aspect": "секстиль",
+        "orb": 1.6
+      },
+      {
+        "a": "Венера",
+        "b": "Плутон",
+        "aspect": "квадрат",
+        "orb": 1.8
+      },
+      {
+        "a": "Меркурий",
+        "b": "Уран",
+        "aspect": "оппозиция",
+        "orb": 2.0
+      },
+      {
+        "a": "Нептун",
+        "b": "Плутон",
+        "aspect": "секстиль",
+        "orb": 2.1
+      },
+      {
+        "a": "Венера",
+        "b": "Марс",
+        "aspect": "секстиль",
+        "orb": 2.2
+      },
+      {
+        "a": "Меркурий",
+        "b": "Плутон",
+        "aspect": "секстиль",
+        "orb": 2.5
+      },
+      {
+        "a": "Луна",
+        "b": "Юпитер",
+        "aspect": "квадрат",
+        "orb": 2.6
+      },
+      {
+        "a": "Меркурий",
+        "b": "Марс",
+        "aspect": "квадрат",
+        "orb": 2.9
+      },
+      {
+        "a": "Меркурий",
+        "b": "Юпитер",
+        "aspect": "квадрат",
+        "orb": 4.3
+      }
+    ],
+    "events_next_7_days": [
+      {
+        "date": "2026-12-09",
+        "type": "new_moon",
+        "text": "Новолуние"
+      },
+      {
+        "date": "2026-12-11",
+        "type": "station",
+        "text": "Сатурн выходит из ретроградности"
+      },
+      {
+        "date": "2026-12-13",
+        "type": "station",
+        "text": "Юпитер становится ретроградным"
+      },
+      {
+        "date": "2026-12-13",
+        "type": "station",
+        "text": "Нептун выходит из ретроградности"
+      }
+    ]
+  },
+  "tarot": {
+    "name": "Четвёрка Пентаклей",
+    "arcana": "младший аркан",
+    "suit": "Пентаклей",
+    "element": "земля"
+  },
+  "recent_issues": []
+}

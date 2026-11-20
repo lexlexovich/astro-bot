@@ -58,22 +58,33 @@ def mix_music(voice: Path, track: Path, seconds: float, out: Path):
                     "-filter_complex", flt, "-map", "[a]", "-ar", "44100", "-ac", "2", str(out)], check=True)
 
 
-def frame(issue: dict, onscreen: str, voice: str, n: int, total: int, out: Path):
+def frame(issue: dict, onscreen: str, voice: str, n: int, total: int, out: Path, sponsor: bool = False):
     img = Image.new("RGB", (W, H), PAPER)
     d = ImageDraw.Draw(img)
     double_rule(d, M, W - M, 230)
     d.text((M, 252), "МЕРКУРИЙ ВИНОВАТ", font=oswald(34), fill=INK)
     d.text((W - M, 252), f"{n}/{total}", font=oswald(34), fill=INK, anchor="ra")
     d.rectangle([M, 310, W - M, 312], fill=INK)
+    if sponsor:
+        logo = Path(__file__).resolve().parent.parent / "assets" / "sponsors" / "bcb_horizontal.png"
+        d.rectangle([M, 350, W - M, 1800], fill=(4, 9, 48))
+        if logo.exists():
+            mark = Image.open(logo).convert("RGBA")
+            mark.thumbnail((W - 2 * M - 80, 620), Image.Resampling.LANCZOS)
+            img.paste(mark, ((W - mark.width) // 2, 520), mark)
+        d.rectangle([M + 30, 390, M + 245, 455], fill=RED)
+        d.text((M + 48, 395), "РЕКЛАМА", font=oswald(42, "Medium"), fill=PAPER)
     text = onscreen.upper()
-    hf = fit_font(d, text, oswald, W - 2 * M, 5, 140, 72)
-    y = draw_lines(d, (M, 480), wrap(d, text, hf, W - 2 * M), hf, INK, int(hf.size * 1.12)) + 40
+    hf = fit_font(d, text, oswald, W - 2 * M, 5, 100 if sponsor else 140, 62 if sponsor else 72)
+    y0 = 1190 if sponsor else 480
+    color = PAPER if sponsor else INK
+    y = draw_lines(d, (M, y0), wrap(d, text, hf, W - 2 * M), hf, color, int(hf.size * 1.12)) + 40
     d.rectangle([M, y, M + 160, y + 10], fill=RED)
     # субтитры — то, что говорит голос; держим над нижней зоной интерфейса TikTok/Reels
     sf = serif(44, "Italic")
     lines = wrap(d, voice, sf, W - 2 * M)[:6]
-    sy = 1480 - len(lines) * 58
-    draw_lines(d, (M, sy), lines, sf, INK, 58)
+    sy = (1670 if sponsor else 1480) - len(lines) * 58
+    draw_lines(d, (M, sy), lines, sf, PAPER if sponsor else INK, 58)
     img.save(out)
 
 
@@ -173,7 +184,7 @@ def build(folder: Path, key: str = "video") -> Path:
     engines: list = []
     for i, seg in enumerate(script, 1):
         img = tmp / f"f{i:02d}.png"
-        frame(issue, seg["onscreen"], seg["voice"], i, len(script), img)
+        frame(issue, seg["onscreen"], seg["voice"], i, len(script), img, bool(seg.get("sponsor")))
         a = tmp / f"a{i:02d}.mp3"
         engine = tts(seg["voice"], a)
         engines.append(engine)

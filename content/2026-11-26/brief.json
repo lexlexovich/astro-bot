@@ -1,0 +1,201 @@
+{
+  "date": "2026-11-26",
+  "weekday": "четверг",
+  "issue_no": 45,
+  "sky": {
+    "date": "2026-11-26",
+    "computed_for": "07:00 Europe/Moscow",
+    "planets": {
+      "sun": {
+        "name": "Солнце",
+        "sign": "Sag",
+        "sign_ru": "Стрелец",
+        "sign_ru_in": "Стрельце",
+        "degree": 3.9,
+        "abs": 243.9,
+        "retrograde": false
+      },
+      "moon": {
+        "name": "Луна",
+        "sign": "Gem",
+        "sign_ru": "Близнецы",
+        "sign_ru_in": "Близнецах",
+        "degree": 25.7,
+        "abs": 85.69,
+        "retrograde": false
+      },
+      "mercury": {
+        "name": "Меркурий",
+        "sign": "Sco",
+        "sign_ru": "Скорпион",
+        "sign_ru_in": "Скорпионе",
+        "degree": 15.3,
+        "abs": 225.31,
+        "retrograde": false
+      },
+      "venus": {
+        "name": "Венера",
+        "sign": "Lib",
+        "sign_ru": "Весы",
+        "sign_ru_in": "Весах",
+        "degree": 25.6,
+        "abs": 205.6,
+        "retrograde": false
+      },
+      "mars": {
+        "name": "Марс",
+        "sign": "Vir",
+        "sign_ru": "Дева",
+        "sign_ru_in": "Деве",
+        "degree": 0.1,
+        "abs": 150.07,
+        "retrograde": false
+      },
+      "jupiter": {
+        "name": "Юпитер",
+        "sign": "Leo",
+        "sign_ru": "Лев",
+        "sign_ru_in": "Льве",
+        "degree": 26.6,
+        "abs": 146.56,
+        "retrograde": false
+      },
+      "saturn": {
+        "name": "Сатурн",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 8.1,
+        "abs": 8.13,
+        "retrograde": true
+      },
+      "uranus": {
+        "name": "Уран",
+        "sign": "Gem",
+        "sign_ru": "Близнецы",
+        "sign_ru_in": "Близнецах",
+        "degree": 3.7,
+        "abs": 63.67,
+        "retrograde": true
+      },
+      "neptune": {
+        "name": "Нептун",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 1.7,
+        "abs": 1.69,
+        "retrograde": true
+      },
+      "pluto": {
+        "name": "Плутон",
+        "sign": "Aqu",
+        "sign_ru": "Водолей",
+        "sign_ru_in": "Водолее",
+        "degree": 3.5,
+        "abs": 303.46,
+        "retrograde": false
+      }
+    },
+    "retrograde": [
+      "Сатурн",
+      "Уран",
+      "Нептун"
+    ],
+    "moon": {
+      "name": "Луна",
+      "sign": "Gem",
+      "sign_ru": "Близнецы",
+      "sign_ru_in": "Близнецах",
+      "degree": 25.7,
+      "abs": 85.69,
+      "retrograde": false,
+      "phase": "убывающая Луна",
+      "angle": 201.8,
+      "illumination_pct": 96,
+      "waxing": false
+    },
+    "aspects": [
+      {
+        "a": "Луна",
+        "b": "Венера",
+        "aspect": "трин",
+        "orb": 0.1
+      },
+      {
+        "a": "Солнце",
+        "b": "Уран",
+        "aspect": "оппозиция",
+        "orb": 0.2
+      },
+      {
+        "a": "Уран",
+        "b": "Плутон",
+        "aspect": "трин",
+        "orb": 0.2
+      },
+      {
+        "a": "Солнце",
+        "b": "Плутон",
+        "aspect": "секстиль",
+        "orb": 0.4
+      },
+      {
+        "a": "Луна",
+        "b": "Юпитер",
+        "aspect": "секстиль",
+        "orb": 0.9
+      },
+      {
+        "a": "Венера",
+        "b": "Юпитер",
+        "aspect": "секстиль",
+        "orb": 1.0
+      },
+      {
+        "a": "Нептун",
+        "b": "Плутон",
+        "aspect": "секстиль",
+        "orb": 1.8
+      },
+      {
+        "a": "Уран",
+        "b": "Нептун",
+        "aspect": "секстиль",
+        "orb": 2.0
+      },
+      {
+        "a": "Солнце",
+        "b": "Нептун",
+        "aspect": "трин",
+        "orb": 2.2
+      },
+      {
+        "a": "Марс",
+        "b": "Юпитер",
+        "aspect": "соединение",
+        "orb": 3.5
+      },
+      {
+        "a": "Марс",
+        "b": "Уран",
+        "aspect": "квадрат",
+        "orb": 3.6
+      },
+      {
+        "a": "Солнце",
+        "b": "Марс",
+        "aspect": "квадрат",
+        "orb": 3.8
+      }
+    ],
+    "events_next_7_days": []
+  },
+  "tarot": {
+    "name": "Тройка Мечей",
+    "arcana": "младший аркан",
+    "suit": "Мечей",
+    "element": "воздух"
+  },
+  "recent_issues": []
+}

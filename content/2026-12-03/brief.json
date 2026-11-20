@@ -1,0 +1,217 @@
+{
+  "date": "2026-12-03",
+  "weekday": "четверг",
+  "issue_no": 52,
+  "sky": {
+    "date": "2026-12-03",
+    "computed_for": "07:00 Europe/Moscow",
+    "planets": {
+      "sun": {
+        "name": "Солнце",
+        "sign": "Sag",
+        "sign_ru": "Стрелец",
+        "sign_ru_in": "Стрельце",
+        "degree": 11.0,
+        "abs": 250.99,
+        "retrograde": false
+      },
+      "moon": {
+        "name": "Луна",
+        "sign": "Lib",
+        "sign_ru": "Весы",
+        "sign_ru_in": "Весах",
+        "degree": 4.3,
+        "abs": 184.29,
+        "retrograde": false
+      },
+      "mercury": {
+        "name": "Меркурий",
+        "sign": "Sco",
+        "sign_ru": "Скорпион",
+        "sign_ru_in": "Скорпионе",
+        "degree": 25.2,
+        "abs": 235.22,
+        "retrograde": false
+      },
+      "venus": {
+        "name": "Венера",
+        "sign": "Lib",
+        "sign_ru": "Весы",
+        "sign_ru_in": "Весах",
+        "degree": 29.3,
+        "abs": 209.27,
+        "retrograde": false
+      },
+      "mars": {
+        "name": "Марс",
+        "sign": "Vir",
+        "sign_ru": "Дева",
+        "sign_ru_in": "Деве",
+        "degree": 2.7,
+        "abs": 152.72,
+        "retrograde": false
+      },
+      "jupiter": {
+        "name": "Юпитер",
+        "sign": "Leo",
+        "sign_ru": "Лев",
+        "sign_ru_in": "Льве",
+        "degree": 26.9,
+        "abs": 146.87,
+        "retrograde": false
+      },
+      "saturn": {
+        "name": "Сатурн",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 8.0,
+        "abs": 7.99,
+        "retrograde": true
+      },
+      "uranus": {
+        "name": "Уран",
+        "sign": "Gem",
+        "sign_ru": "Близнецы",
+        "sign_ru_in": "Близнецах",
+        "degree": 3.4,
+        "abs": 63.37,
+        "retrograde": true
+      },
+      "neptune": {
+        "name": "Нептун",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 1.6,
+        "abs": 1.64,
+        "retrograde": true
+      },
+      "pluto": {
+        "name": "Плутон",
+        "sign": "Aqu",
+        "sign_ru": "Водолей",
+        "sign_ru_in": "Водолее",
+        "degree": 3.6,
+        "abs": 303.6,
+        "retrograde": false
+      }
+    },
+    "retrograde": [
+      "Сатурн",
+      "Уран",
+      "Нептун"
+    ],
+    "moon": {
+      "name": "Луна",
+      "sign": "Lib",
+      "sign_ru": "Весы",
+      "sign_ru_in": "Весах",
+      "degree": 4.3,
+      "abs": 184.29,
+      "retrograde": false,
+      "phase": "убывающий серп",
+      "angle": 293.3,
+      "illumination_pct": 30,
+      "waxing": false
+    },
+    "aspects": [
+      {
+        "a": "Уран",
+        "b": "Плутон",
+        "aspect": "трин",
+        "orb": 0.2
+      },
+      {
+        "a": "Луна",
+        "b": "Плутон",
+        "aspect": "трин",
+        "orb": 0.7
+      },
+      {
+        "a": "Марс",
+        "b": "Уран",
+        "aspect": "квадрат",
+        "orb": 0.7
+      },
+      {
+        "a": "Луна",
+        "b": "Уран",
+        "aspect": "трин",
+        "orb": 0.9
+      },
+      {
+        "a": "Меркурий",
+        "b": "Юпитер",
+        "aspect": "квадрат",
+        "orb": 1.7
+      },
+      {
+        "a": "Уран",
+        "b": "Нептун",
+        "aspect": "секстиль",
+        "orb": 1.7
+      },
+      {
+        "a": "Нептун",
+        "b": "Плутон",
+        "aspect": "секстиль",
+        "orb": 2.0
+      },
+      {
+        "a": "Венера",
+        "b": "Юпитер",
+        "aspect": "секстиль",
+        "orb": 2.4
+      },
+      {
+        "a": "Луна",
+        "b": "Нептун",
+        "aspect": "оппозиция",
+        "orb": 2.7
+      },
+      {
+        "a": "Солнце",
+        "b": "Сатурн",
+        "aspect": "трин",
+        "orb": 3.0
+      },
+      {
+        "a": "Венера",
+        "b": "Марс",
+        "aspect": "секстиль",
+        "orb": 3.4
+      },
+      {
+        "a": "Луна",
+        "b": "Сатурн",
+        "aspect": "оппозиция",
+        "orb": 3.7
+      }
+    ],
+    "events_next_7_days": [
+      {
+        "date": "2026-12-05",
+        "type": "ingress",
+        "text": "Венера входит в знак Скорпион"
+      },
+      {
+        "date": "2026-12-07",
+        "type": "ingress",
+        "text": "Меркурий входит в знак Стрелец"
+      },
+      {
+        "date": "2026-12-09",
+        "type": "new_moon",
+        "text": "Новолуние"
+      }
+    ]
+  },
+  "tarot": {
+    "name": "Туз Кубков",
+    "arcana": "младший аркан",
+    "suit": "Кубков",
+    "element": "вода"
+  },
+  "recent_issues": []
+}

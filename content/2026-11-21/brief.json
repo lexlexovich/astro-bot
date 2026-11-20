@@ -1,0 +1,217 @@
+{
+  "date": "2026-11-21",
+  "weekday": "суббота",
+  "issue_no": 40,
+  "sky": {
+    "date": "2026-11-21",
+    "computed_for": "07:00 Europe/Moscow",
+    "planets": {
+      "sun": {
+        "name": "Солнце",
+        "sign": "Sco",
+        "sign_ru": "Скорпион",
+        "sign_ru_in": "Скорпионе",
+        "degree": 28.8,
+        "abs": 238.85,
+        "retrograde": false
+      },
+      "moon": {
+        "name": "Луна",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 12.4,
+        "abs": 12.41,
+        "retrograde": false
+      },
+      "mercury": {
+        "name": "Меркурий",
+        "sign": "Sco",
+        "sign_ru": "Скорпион",
+        "sign_ru_in": "Скорпионе",
+        "degree": 9.4,
+        "abs": 219.36,
+        "retrograde": false
+      },
+      "venus": {
+        "name": "Венера",
+        "sign": "Lib",
+        "sign_ru": "Весы",
+        "sign_ru_in": "Весах",
+        "degree": 23.8,
+        "abs": 203.85,
+        "retrograde": false
+      },
+      "mars": {
+        "name": "Марс",
+        "sign": "Leo",
+        "sign_ru": "Лев",
+        "sign_ru_in": "Льве",
+        "degree": 28.0,
+        "abs": 148.02,
+        "retrograde": false
+      },
+      "jupiter": {
+        "name": "Юпитер",
+        "sign": "Leo",
+        "sign_ru": "Лев",
+        "sign_ru_in": "Льве",
+        "degree": 26.3,
+        "abs": 146.26,
+        "retrograde": false
+      },
+      "saturn": {
+        "name": "Сатурн",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 8.3,
+        "abs": 8.28,
+        "retrograde": true
+      },
+      "uranus": {
+        "name": "Уран",
+        "sign": "Gem",
+        "sign_ru": "Близнецы",
+        "sign_ru_in": "Близнецах",
+        "degree": 3.9,
+        "abs": 63.88,
+        "retrograde": true
+      },
+      "neptune": {
+        "name": "Нептун",
+        "sign": "Ari",
+        "sign_ru": "Овен",
+        "sign_ru_in": "Овне",
+        "degree": 1.7,
+        "abs": 1.75,
+        "retrograde": true
+      },
+      "pluto": {
+        "name": "Плутон",
+        "sign": "Aqu",
+        "sign_ru": "Водолей",
+        "sign_ru_in": "Водолее",
+        "degree": 3.4,
+        "abs": 303.37,
+        "retrograde": false
+      }
+    },
+    "retrograde": [
+      "Сатурн",
+      "Уран",
+      "Нептун"
+    ],
+    "moon": {
+      "name": "Луна",
+      "sign": "Ari",
+      "sign_ru": "Овен",
+      "sign_ru_in": "Овне",
+      "degree": 12.4,
+      "abs": 12.41,
+      "retrograde": false,
+      "phase": "растущая Луна",
+      "angle": 133.6,
+      "illumination_pct": 84,
+      "waxing": true
+    },
+    "aspects": [
+      {
+        "a": "Уран",
+        "b": "Плутон",
+        "aspect": "трин",
+        "orb": 0.5
+      },
+      {
+        "a": "Солнце",
+        "b": "Марс",
+        "aspect": "квадрат",
+        "orb": 0.8
+      },
+      {
+        "a": "Нептун",
+        "b": "Плутон",
+        "aspect": "секстиль",
+        "orb": 1.6
+      },
+      {
+        "a": "Марс",
+        "b": "Юпитер",
+        "aspect": "соединение",
+        "orb": 1.8
+      },
+      {
+        "a": "Уран",
+        "b": "Нептун",
+        "aspect": "секстиль",
+        "orb": 2.1
+      },
+      {
+        "a": "Венера",
+        "b": "Юпитер",
+        "aspect": "секстиль",
+        "orb": 2.4
+      },
+      {
+        "a": "Солнце",
+        "b": "Юпитер",
+        "aspect": "квадрат",
+        "orb": 2.6
+      },
+      {
+        "a": "Солнце",
+        "b": "Нептун",
+        "aspect": "трин",
+        "orb": 2.9
+      },
+      {
+        "a": "Луна",
+        "b": "Сатурн",
+        "aspect": "соединение",
+        "orb": 4.1
+      },
+      {
+        "a": "Солнце",
+        "b": "Уран",
+        "aspect": "оппозиция",
+        "orb": 5.0
+      },
+      {
+        "a": "Марс",
+        "b": "Уран",
+        "aspect": "квадрат",
+        "orb": 5.9
+      },
+      {
+        "a": "Меркурий",
+        "b": "Плутон",
+        "aspect": "квадрат",
+        "orb": 6.0
+      }
+    ],
+    "events_next_7_days": [
+      {
+        "date": "2026-11-23",
+        "type": "ingress",
+        "text": "Солнце входит в знак Стрелец"
+      },
+      {
+        "date": "2026-11-25",
+        "type": "full_moon",
+        "text": "Полнолуние"
+      },
+      {
+        "date": "2026-11-26",
+        "type": "ingress",
+        "text": "Марс входит в знак Дева"
+      }
+    ]
+  },
+  "tarot": {
+    "name": "Паж Жезлов",
+    "arcana": "младший аркан",
+    "suit": "Жезлов",
+    "element": "огонь"
+  },
+  "recent_issues": []
+}
