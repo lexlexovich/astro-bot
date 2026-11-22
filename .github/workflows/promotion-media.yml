@@ -1,0 +1,46 @@
+name: Архив медиа текущего пакета
+on:
+  push:
+    branches: [main]
+    paths: ['promotion_2026/media.json']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: promotion-media-archive
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: pip install Pillow
+      - name: Собрать архив из проверенных файлов Metricool
+        run: |
+          python - <<'PY'
+          import hashlib, json, pathlib, urllib.request
+          from PIL import Image, ImageDraw, ImageFont
+          root=pathlib.Path("promotion_2026")
+          for row in json.loads((root/"media.json").read_text()):
+              assert row["key"] in ("video2_pair","video_morning","video_tarot")
+              date=row["date"]
+              assert len(date)==10 and date.replace("-","").isdigit()
+              out=root/date/(row["key"]+".mp4")
+              out.parent.mkdir(exist_ok=True)
+              if not out.exists() or hashlib.sha256(out.read_bytes()).hexdigest()!=row["sha256"]:
+                  assert row["url"].startswith("https://static.metricool.com/planner/")
+                  with urllib.request.urlopen(row["url"],timeout=90) as response:
+                      raw=response.read()
+                  assert hashlib.sha256(raw).hexdigest()==row["sha256"], out
+                  out.write_bytes(raw)
+              picture=out.parent/"telegram.jpg"
+              if (out.parent/"telegram.txt").exists() and not picture.exists():
+                  img=Image.open(pathlib.Path("content")/date/"horoscope.png").convert("RGB")
+                  logo=Image.open("assets/sponsors/bcb_horizontal.png").convert("RGBA")
+                  logo.thumbnail((img.width//3,img.height//10))
+                  img.paste(logo,(img.width-logo.width-24,24),logo)
+                  img.save(picture,quality=94)
+          PY
+          git add promotion_2026
+          if ! git diff --cached --quiet; then
+            git -c user.name=vega-bot -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -m 'content: archive verified campaign media'
+            git pull --rebase && git push
+          fi

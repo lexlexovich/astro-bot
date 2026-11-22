@@ -1,0 +1,46 @@
+name: Ссылки кампании в Telegram
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/promotion-links.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: promotion-telegram-links
+jobs:
+  links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Создать приглашения для трёх площадок
+        env:
+          TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          CHANNEL: ${{ secrets.CHANNEL_ID }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, urllib.request, urllib.parse
+          target = pathlib.Path("promotion_2026/invites.json")
+          links = json.loads(target.read_text()) if target.exists() else {}
+          for network in ("tiktok", "youtube", "instagram"):
+              if network in links:
+                  continue
+              fields = {"chat_id":os.environ["CHANNEL"],"name":"prognoz-"+network}
+              req = urllib.request.Request("https://api.telegram.org/bot"+os.environ["TOKEN"]+"/createChatInviteLink", data=urllib.parse.urlencode(fields).encode())
+              try:
+                  with urllib.request.urlopen(req, timeout=20) as response:
+                      result = json.load(response)
+              except Exception:
+                  raise SystemExit("Telegram declined the invite request for "+network)
+              links[network] = result["result"]["invite_link"]
+              target.write_text(json.dumps(links, indent=2)+"\n")
+          PY
+      - name: Сохранить ссылки кампании
+        if: always()
+        run: |
+          if [ -f promotion_2026/invites.json ]; then
+            git add promotion_2026/invites.json
+            if ! git diff --cached --quiet; then
+              git -c user.name=vega-bot -c user.email=41898282+github-actions[bot]@users.noreply.github.com commit -m 'content: Telegram acquisition links'
+              git pull --rebase && git push
+            fi
+          fi

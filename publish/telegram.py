@@ -29,6 +29,23 @@ SLOTS = {
 CAPTION_LIMIT = 1024
 SLOT_TIME = {"morning": (7, 30), "affirmation": (10, 0), "tarot": (12, 30), "video": (18, 0), "evening": (21, 0), "report": (21, 40)}
 MAX_LATE_HOURS = 3  # запуск по расписанию, опоздавший сильнее и перешедший за полночь, не публикуем
+CAMPAIGN_START, CAMPAIGN_END = "2026-11-22", "2026-12-15"
+
+
+def active_slots(day):
+    if not CAMPAIGN_START <= day <= CAMPAIGN_END:
+        return SLOTS
+    return {s: SLOTS[s] for s in SLOTS if s == "morning" or
+            (s == "evening" and datetime.fromisoformat(day).weekday() in (1, 4))}
+
+
+def campaign_poll(day):
+    dates = ["2026-11-24","2026-11-27","2026-12-01","2026-12-04","2026-12-08","2026-12-11","2026-12-15"]
+    options = [("Лев и Скорпион","Овен и Телец"),("Дева и Стрелец","Весы и Козерог"),
+               ("Рак и Стрелец","Близнецы и Рыбы"),("Лев и Козерог","Телец и Водолей"),
+               ("Овен и Козерог","Лев и Водолей"),("Скорпион и Рыбы","Телец и Козерог"),
+               ("Близнецы и Весы","Рак и Рыбы")]
+    return list(options[dates.index(day)])
 
 
 def scheduled_day(slot: str, now: datetime) -> tuple[str, float]:
@@ -147,6 +164,8 @@ def publish(slot: str, day: str, tg: TG) -> None:
     if status.get(slot, {}).get("ok"):
         print(f"{slot} уже опубликован, пропускаю")
         return
+    if slot not in active_slots(day):
+        return
     post = issue["posts"].get(slot)
     if post is None:  # в старых выпусках нет аффирмации — слот просто пропускаем
         status[slot] = {"ok": True, "skipped": True}
@@ -156,6 +175,33 @@ def publish(slot: str, day: str, tg: TG) -> None:
     try:
         extra = {}
         if slot == "morning":
+            if CAMPAIGN_START < day <= CAMPAIGN_END:
+                assets = ROOT / "promotion_2026" / day
+                caption = (assets / "telegram.txt").read_text().strip()
+                yesterday = (datetime.fromisoformat(day)-timedelta(days=1)).date().isoformat()
+                previous = ROOT / "content" / yesterday
+                previous_status = load_status(previous)
+                evening = previous_status.get("evening", {})
+                if CAMPAIGN_START <= yesterday and evening.get("poll_message_id"):
+                    if "winning_pair" not in evening:
+                        try:
+                            result = tg.call("stopPoll", {"chat_id":tg.channel,"message_id":evening["poll_message_id"]})
+                        except RuntimeError as exc:
+                            print(f"Итоги опроса недоступны: {exc}", file=sys.stderr)
+                            result = {"options":[]}
+                        ranked = sorted(result["options"], key=lambda x: -x["voter_count"])
+                        evening["winning_pair"] = ranked[0]["text"] if ranked and ranked[0]["voter_count"] else None
+                        evening["poll_reported"] = True
+                        save_status(previous,previous_status)
+                    pair = evening["winning_pair"]
+                    tips = json.loads((ROOT / "promotion_2026/pair_tips.json").read_text())
+                    if pair in tips:
+                        caption += "\n\nПо вчерашнему голосованию · "+pair+". "+tips[pair]
+                assert len(caption) <= CAPTION_LIMIT
+                tg.media(tg.channel, "photo", assets / "telegram.jpg", caption)
+                status[slot] = {"ok": True, "at": datetime.now(MSK).isoformat(timespec="minutes")}
+                save_status(folder, status)
+                return
             msg = tg.media(tg.channel, "photo", folder / "horoscope.png", post["text"])
             try:
                 poll_summary(tg, day, msg.get("message_id"))
@@ -178,6 +224,11 @@ def publish(slot: str, day: str, tg: TG) -> None:
                 tg.alert(f"⚠️ {day}: видео не собралось, вместо него вышла обложка. "
                          "Проверьте вкладку Actions → «Сборка видео».")
         elif slot == "evening":
+            if CAMPAIGN_START <= day <= CAMPAIGN_END:
+                pm = tg.poll(tg.channel, "Какую пару разобрать в канале? Опрос при поддержке VPN-сервиса Better Call Boris.", campaign_poll(day))
+                status[slot] = {"ok":True, "poll_message_id":pm["message_id"], "at":datetime.now(MSK).isoformat(timespec="minutes")}
+                save_status(folder, status)
+                return
             if post.get("text"):
                 tg.text(tg.channel, post["text"])
             if post.get("poll"):
@@ -201,7 +252,7 @@ def report(day: str, tg: TG) -> None:
         issue = json.loads((folder / "issue.json").read_text(encoding="utf-8"))
     lines = [f"Меркурий виноват · {day}"]
     done = 0
-    for slot, label in SLOTS.items():
+    for slot, label in active_slots(day).items():
         st = status.get(slot, {})
         extra = ""
         if slot == "tarot" and issue:
@@ -220,7 +271,7 @@ def report(day: str, tg: TG) -> None:
         lines.append(f"Завтра: выпуск готов, {video}")
     else:
         lines.append("Завтра: выпуска пока нет — Claude готовит его в 20:00, проверьте позже")
-    lines.insert(1, f"Вышло {done} из {len(SLOTS)}")
+    lines.insert(1, f"Вышло {done} из {len(active_slots(day))}")
     lines += stats_lines(day, tg)
     tg.alert("\n".join(lines))
 
@@ -294,7 +345,7 @@ def auto(tg: TG) -> None:
             status["missing_alerted"] = True
             save_status(folder, status)
         return
-    for slot in SLOTS:
+    for slot in active_slots(day):
         h, m = SLOT_TIME[slot]
         planned = now.replace(hour=h, minute=m, second=0, microsecond=0)
         late = (now - planned).total_seconds() / 3600

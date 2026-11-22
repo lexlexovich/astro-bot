@@ -60,13 +60,22 @@ def collect(tg) -> int:
     data = load()
     try:
         updates = tg.call("getUpdates", {"offset": data["offset"], "timeout": 0,
-                                         "allowed_updates": json.dumps(["message"])})
+                                         "allowed_updates": json.dumps(["message", "chat_member"])})
     except Exception as exc:  # заявки не должны ронять публикацию
         print(f"getUpdates: {exc}")
         return 0
     new = 0
     for u in updates:
         data["offset"] = max(data["offset"], u["update_id"] + 1)
+        member = u.get("chat_member") or {}
+        link_name = member.get("invite_link", {}).get("name", "")
+        if link_name in {"prognoz-tiktok","prognoz-instagram","prognoz-youtube"}:
+            old = member.get("old_chat_member", {}).get("status")
+            joined = member.get("new_chat_member", {}).get("status")
+            if old in ("left","kicked") and joined in ("member","administrator","creator"):
+                day = datetime.fromtimestamp(member["date"], MSK).date().isoformat()
+                joins = data.setdefault("campaign_joins", {}).setdefault(day, {})
+                joins[link_name] = joins.get(link_name, 0) + 1
         msg = u.get("message") or {}
         chat = msg.get("chat", {})
         if chat.get("type") not in ("group", "supergroup"):
